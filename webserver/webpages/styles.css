@@ -1,0 +1,39 @@
+main {
+	display: grid;
+	grid-template-columns: repeat(4,1fr);
+	grid-column-gap: 0.5em;
+	grid-template-rows: 0.125fr 1fr 0.125fr;
+    grid-template-areas: "head head head head"
+                         "weeksColumn topicsColumn notesColumn resourcesColumn"
+						 "footer footer footer footer";
+	height: 95vh;
+	width: 95vw;
+}
+
+* {
+	--header-text-alignment: center;
+	--column-text-alignment: left;
+	text-align: var(--header-text-alignment);
+  }
+
+.footer{
+	grid-area: footer;
+	background: pink;
+}
+
+.weeksColumn{
+	text-align: var(--column-text-alignment);
+	grid-area: weeksColumn;
+	background: blue;
+}
+.topicsColumn{
+	/* grid-area: middlePhotos; */
+	background: red;
+}
+.notesColumn{
+	/* grid-area: rightPhotos; */
+	background: green;
+}
+.resourcesColumn{
+	background: orange;
+}
