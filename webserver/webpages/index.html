@@ -4,25 +4,33 @@
 
 <html lang="en">
 <link rel="stylesheet" type="text/css" href="styles.css" />
+<meta name="google-signin-client_id" content="424667604152-rh5b1c1fb52tqgqnf9lmau2vi826fa8i.apps.googleusercontent.com">
+<!-- <meta name="google-signin-client_id" content=""> -->
 <header>
     Course planner
+    <div class="g-signin2" data-onsuccess="onSignIn"></div>
 </header>
 <main>
-    <p >Weeks</p>
-    <p >Topics</p>
-    <p >Notes & Ideas</p>
+    <p>Weeks<button id="newWeekButton" type="button">+</button></p>
+    <p>Topics</p>
+    <p>Notes & Ideas</p>
     <p>Resources</p>
-    <p class="weeksColumn">test</p>
-    <p class="topicsColumn">test</p>
-    <p class="notesColumn">test</p>
-    <p class="resourcesColumn">test</p>
-    <p class="footer">test</p>
-
+    <div class="weeksColumn">Weeks
+        <div id="weeksColumnGrid">Week 1</div>
+        <div id="weeksColumnGrid">Week 2</div>
+        <div id="weeksColumnGrid">Week 3</div>
+        <div id="weeksColumnGrid">Week 4</div>
+        <div id="weeksColumnGrid">Week 4</div>
+        <div id="weeksColumnGrid">Week 4</div>
+        <div id="weeksColumnGrid">Week 4</div>
+        <div id="weeksColumnGrid">Week 4</div>
+    </div>
+        <div class="topicsColumn">topics</div>
+        <div class="notesColumn">Notes and ideas </div>
+        <!-- <textarea class="notesColumn" placeholder="asd"> </textarea> -->
+        <div class="resourcesColumn">Resources text</div>
+        <div class="footer">Footer text</div>
 </main>
 
-
-    <!-- <div class="weeksColumn"> -->
-<!-- </div> -->
-
-<script src="index.js">
-</script>
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+<script src="index.js"></script>
