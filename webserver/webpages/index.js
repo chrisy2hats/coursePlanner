@@ -2,6 +2,8 @@ console.log("index.js called."+Math.floor(Math.random() *20)); //Non static mess
 
 document.getElementById('newWeekButton').addEventListener('click', addNewWeek);
 
+
+
 function onSignIn(googleUser) {
     // try { //Try catch is needed incase the user is blocking 3rd party cookies.This appears to be the default in Chromium.
         var profile = googleUser.getBasicProfile();
@@ -15,5 +17,8 @@ function onSignIn(googleUser) {
 }
 
 function addNewWeek(){
-    console.log("addNewWeek called");
+    let numberOfWeeks = document.querySelectorAll('#weeksColumnGrid').length; //This is 0 indexed.
+    let weeksColumn = document.querySelector('.weeksColumn');
+    let weeksColumnContents = weeksColumn.innerHTML;
+    weeksColumn.innerHTML = weeksColumnContents + '<div id="weeksColumnGrid" draggable="true" >Week '+(numberOfWeeks+1)+'</div>'; //TODO make this less hard coded
 }
