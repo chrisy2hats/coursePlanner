@@ -1,26 +1,27 @@
 <!DOCTYPE HTML>
 
 <meta charset="UTF-8">
+<title>Course Planner </title>
 
 <html lang="en">
 <link rel="stylesheet" type="text/css" href="styles.css" />
 <meta name="google-signin-client_id" content="424667604152-rh5b1c1fb52tqgqnf9lmau2vi826fa8i.apps.googleusercontent.com">
-<!-- <meta name="google-signin-client_id" content=""> -->
 <header>
     Course planner
-    <div class="g-signin2" data-onsuccess="onSignIn"></div>
 </header>
 <main>
     <p>Weeks<button id="newWeekButton" type="button">+</button></p>
-    <p>Topics</p>
-    <p>Notes & Ideas</p>
-    <p>Resources</p>
-    <div class="weeksColumn">Weeks
+    <p>Topics<button id="newTopicButton" type="button">+</button></p>
+    <p>Notes & Ideas<button id="newNotesAndIdeasButton" type="button">+</button></p>
+    <p>Resources<button id="newResourceButton" type="button">+</button></p>
+    <div class="weeksColumn">Weeks</div>
+    <div class="topicsColumn">Topics </div>
+    <div class="notesColumn">Notes and ideas </div>
+    <div class="resourcesColumn">Resources text</div>
+    <div class="footer">
+        <button id="logoutButton" type="button"> Logout </button> Footer text
+        <div class="g-signin2" data-onsuccess="onSignIn"></div>
     </div>
-        <div class="topicsColumn">Topics</div>
-        <div class="notesColumn">Notes and ideas </div>
-        <div class="resourcesColumn">Resources text</div>
-        <div class="footer">Footer text</div>
 </main>
 
 <script src="https://apis.google.com/js/platform.js" async defer></script>
