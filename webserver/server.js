@@ -20,7 +20,7 @@ app.get('/webserver/getCourses/', async function(req, res) { //TODO getCourses i
         res.json({error: "ERROR code: server.js03 : undefined passed to getCourses"});
     }
     let courses = await databaseMethod.retrieveCoursesByEmail(email);
-    if (courses.length ==0){
+    if (courses.length == 0){
         res.statusCode=500;
         console.error("ERROR code: server.js02 : 0 line response for email: "+email);
         res.json({error: "ERROR code: server.js02 : 0 line response for email:"});
@@ -28,6 +28,25 @@ app.get('/webserver/getCourses/', async function(req, res) { //TODO getCourses i
     res.statusCode=200;
     res.json(courses);
 });
+
+
+app.get('/webserver/getWeek', async function(req, res){
+    res.setHeader('Content-Type', 'application/json');
+    let weekNumber = req.query.weekNumber;
+    let courseName = req.query.courseName;
+    let weekContents = await databaseMethod.getWeek(courseName,weekNumber);
+    res.json(weekContents[0]);
+});
+
+
+app.get('/webserver/getNumberOfWeeks/', async function(req, res) { //TODO getCourses is probably not the best name
+    res.setHeader('Content-Type', 'application/json');
+    let courseName = req.query.courseName;
+    let courseInfo = await databaseMethod.getNumberOfWeeksInACourse(courseName);
+    // }
+    res.json(courseInfo[0]);
+});
+// selectWeeksByCourse
 
 
 /* Code to run the server. This will run indefinetly unless terminated. If an error occurs during startup then this error should be outputted.Otherwise a successful startup should be indicated.The server is run on port 8080 by default. To change this edit the value of the port constant*/

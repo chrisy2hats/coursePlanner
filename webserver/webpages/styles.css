@@ -1,10 +1,15 @@
+/*
+TODO
+Actually use grid-area not just let elements fall into place1
+Reduce amount of CSS by combining classes
+ */
+
 main {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-column-gap: 0.5em;
     grid-template-rows: 0.125fr 1fr 0.0625fr;
     grid-template-areas: "head head head head" "weeksColumn topicsColumn notesColumn resourcesColumn" "footer footer footer footer";
-    /* grid-template-areas: "head head head head" "weeksColumn topicsColumn notesColumn resourcesColumn" repeat(4,"footer"); */
     height: 95vh;
     width: 95vw;
 }
@@ -13,15 +18,20 @@ main {
     margin-left: 1em;
 }
 
-#topicsColumnTextArea, #notesColumnTextArea, #resourcesColumnTextArea { /*TODO should probably make the not resizeable*/
+#topicsColumnTextArea, #notesColumnTextArea, #resourcesColumnTextArea {
+    /*TODO should probably make the not resizeable*/
     margin-top: 0.125em;
     margin-bottom: 0.125em;
     width: 95%;
 }
 
-header {
-    text: black;
+#logoutButton, #saveButton {
+    visibility: hidden;
 }
+
+/* header {
+    text: black;
+} */
 
 * {
     --header-text-alignment: center;
@@ -51,19 +61,15 @@ header {
     background: cyan;
     display: grid;
     grid-template-columns: 1fr;
-    /* grid-template-rows: repeat(3, 1fr); */
 }
 
-.topicsColumn {
+.topicsColumn, .notesColumn {
     border: var(--column-border);
-    /* grid-area: middlePhotos; */
     background: red;
 }
 
 .notesColumn {
-    /* grid-area: rightPhotos; */
     border: var(--column-border);
-    /* color: black; */
     background: green;
 }
 
