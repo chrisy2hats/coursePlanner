@@ -1,58 +1,73 @@
 main {
-	display: grid;
-	grid-template-columns: repeat(4,1fr);
-	grid-column-gap: 0.5em;
-	grid-template-rows: 0.125fr 1fr 0.0625fr;
-    grid-template-areas: "head head head head"
-                         "weeksColumn topicsColumn notesColumn resourcesColumn"
-						 "footer footer footer footer";
-	height: 95vh;
-	width: 95vw;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-column-gap: 0.5em;
+    grid-template-rows: 0.125fr 1fr 0.0625fr;
+    grid-template-areas: "head head head head" "weeksColumn topicsColumn notesColumn resourcesColumn" "footer footer footer footer";
+    /* grid-template-areas: "head head head head" "weeksColumn topicsColumn notesColumn resourcesColumn" repeat(4,"footer"); */
+    height: 95vh;
+    width: 95vw;
 }
 
-header{
-	text:black;
+#newWeekButton, #newTopicButton, #newNotesAndIdeasButton, #newResourceButton {
+    margin-left: 1em;
+}
+
+#topicsColumnTextArea, #notesColumnTextArea, #resourcesColumnTextArea { /*TODO should probably make the not resizeable*/
+    margin-top: 0.125em;
+    margin-bottom: 0.125em;
+    width: 95%;
+}
+
+header {
+    text: black;
 }
 
 * {
-	--header-text-alignment: center;
-	--column-text-alignment: left;
-	text-align: var(--header-text-alignment);
-	--column-border: 2px solid black;
-  }
-
-.footer{
-	grid-area: footer;
-	margin-top: 10px;
-	background: pink;
-	border: var(--column-border);
+    --header-text-alignment: center;
+    --column-text-alignment: left;
+    text-align: var(--header-text-alignment);
+    --column-border: 2px solid black;
 }
 
-.weeksColumn{
-	text-align: var(--column-text-alignment);
-	grid-area: weeksColumn;
-	border: var(--column-border);
-	background: blue;
+.footer {
+    grid-area: footer;
+    margin-top: 5px;
+    background: pink;
+    border: var(--column-border);
 }
-#weeksColumnGrid{
-	border: var(--column-border);
-	background: cyan;
-	display:grid;
-	grid-template-columns: 1fr;
-	/* grid-template-rows: repeat(3, 1fr); */
+
+.weeksColumn {
+    text-align: var(--column-text-alignment);
+    grid-area: weeksColumn;
+    border: var(--column-border);
+    background: blue;
 }
-.topicsColumn{
-	border: var(--column-border);
-	/* grid-area: middlePhotos; */
-	background: red;
+
+#weeksColumnGrid {
+    margin-top: 0.125em;
+    margin-bottom: 0.25em;
+    border: var(--column-border);
+    background: cyan;
+    display: grid;
+    grid-template-columns: 1fr;
+    /* grid-template-rows: repeat(3, 1fr); */
 }
-.notesColumn{
-	/* grid-area: rightPhotos; */
-	border: var(--column-border);
-	/* color: black; */
-	background: green;
+
+.topicsColumn {
+    border: var(--column-border);
+    /* grid-area: middlePhotos; */
+    background: red;
 }
-.resourcesColumn{
-	border: var(--column-border);
-	background: orange;
+
+.notesColumn {
+    /* grid-area: rightPhotos; */
+    border: var(--column-border);
+    /* color: black; */
+    background: green;
+}
+
+.resourcesColumn {
+    border: var(--column-border);
+    background: orange;
 }
