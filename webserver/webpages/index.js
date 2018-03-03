@@ -6,10 +6,76 @@ document.getElementById('newNotesAndIdeasButton').addEventListener('click', addT
 document.getElementById('newResourceButton').addEventListener('click', addTextAreaToResources);
 document.getElementById('logoutButton').addEventListener('click', signOut);
 document.getElementById('saveButton').addEventListener('click', saveChanges);
-document.getElementById('newCourseButton').addEventListener('click', addCourse); //TODO
-document.getElementById('keyboardShortcutsButton').addEventListener('click', viewKeyboardShortcuts);
+document.getElementById('newCourseButton').addEventListener('click', addCourse);
+document.getElementById('deleteWeekButton').addEventListener('click', deleteWeek);
+document.getElementById('deleteCourseButton').addEventListener('click', deleteCourse);
+document.getElementById('transferOwnershipButton').addEventListener('click', transferOwnershipOfCourse);
+// document.getElementById('addCollaboratorButton').addEventListener('click', addCollaborator);
+// document.getElementById('removeCollaboratorButton').addEventListener('click', removeCollaborator);
+// document.getElementById('keyboardShortcutsButton').addEventListener('click', viewKeyboardShortcuts);
 document.getElementById('coursesDropdown').addEventListener('change', courseSelected);
 
+async function transferOwnershipOfCourse() {
+// async function deleteWeek2() {
+    // async function transferOwnership(courseName,ownerEmail,newOwner) {
+    console.log("transferOwnershp called");
+    let dropDownList = document.querySelector('#coursesDropdown');
+    let coursesDropdown = document.getElementById('coursesDropdown');
+    let indexOfSelectCourse = coursesDropdown.selectedIndex;
+    if (indexOfSelectCourse != 0) {
+        let courseName = coursesDropdown.options[indexOfSelectCourse].text;
+        let ownerEmail = window.userEmail;
+        let newOwnerEmail = document.getElementById('newOwnerTextField').value;
+        console.log("newOwnerEmail" + newOwnerEmail);
+        const url = '/webserver/transferOwnership?courseName=' + courseName + '&ownerEmail=' + ownerEmail + '&newOwnerEmail=' + newOwnerEmail;
+        let response = await fetch(url);
+        if (response.ok) {
+        }
+    }
+}
+
+
+//TODO remove the delted week from the List of weeks
+async function deleteWeek() {
+    let dropDownList = document.querySelector('#coursesDropdown');
+    let coursesDropdown = document.getElementById('coursesDropdown');
+    let indexOfSelectCourse = coursesDropdown.selectedIndex;
+    if (indexOfSelectCourse != 0) {
+        let weekNumber = window.selectedWeek
+        let courseName = coursesDropdown.options[indexOfSelectCourse].text;
+        const url = '/webserver/deleteWeek?weekNumber=' + weekNumber + "&courseName=" + courseName
+        let response = await fetch(url);
+        if (response.ok) {
+            //TODO
+        }
+    }
+}
+
+//TODO clear the screen of remnants of the course
+async function deleteCourse() {
+    let dropDownList = document.querySelector('#coursesDropdown');
+    let coursesDropdown = document.getElementById('coursesDropdown');
+    let indexOfSelectCourse = coursesDropdown.selectedIndex;
+    if (indexOfSelectCourse != 0) {
+        let ownerEmail = window.userEmail;
+        let courseName = coursesDropdown.options[indexOfSelectCourse].text;
+        const url = '/webserver/deleteCourse?courseName=' + courseName + '&ownerEmail=' + ownerEmail;
+        let response = await fetch(url);
+        if (response.ok) {
+            //TODO
+        }
+    }
+
+}
+
+function addCollaborator() {
+    console.log("addCollaborator called");
+
+}
+
+function transferOwnership() {
+
+}
 
 
 
@@ -107,13 +173,13 @@ async function saveChanges() {
     console.log("Save changes called");
     //TODO update database then inform user save was successful
     let weekNumber = window.selectedWeek; //TODO Change this.Global variables eww
-    console.log("weekNumber in saveChanges"+weekNumber);
+    console.log("weekNumber in saveChanges" + weekNumber);
 
     let dropDownList = document.querySelector('#coursesDropdown');
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
     if (indexOfSelectCourse != 0) {
-    let    courseName = coursesDropdown.options[indexOfSelectCourse].text;
+        let courseName = coursesDropdown.options[indexOfSelectCourse].text;
         let topics = document.getElementById('topicsColumnTextArea') ? document.getElementById('topicsColumnTextArea').value : "";
         let notesAndIdeas = document.getElementById('notesColumnTextArea') ? document.getElementById('notesColumnTextArea').value : "";
         let resources = document.getElementById('resourcesColumnTextArea') ? document.getElementById('resourcesColumnTextArea').value : "";

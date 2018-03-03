@@ -19,23 +19,57 @@ app.get('/webserver/getCourses/', async function(req, res) { //TODO getCourses i
     if (!email) {
         res.statusCode = 500;
         console.error("ERROR code: server.js03 : undefined passed to getCourses");
-        res.json({
-            error: "ERROR code: server.js03 : undefined passed to getCourses"
-        });
+        res.send({});
+    } else {
+        let courses = await databaseMethod.retrieveCoursesByEmail(email);
+        if (courses.length == 0) {
+            res.statusCode = 500;
+            console.error("ERROR code: server.js02 : 0 line response for email: " + email);
+            res.send({});
+        } else {
+            res.statusCode = 200;
+            res.json(courses);
+        }
     }
-    let courses = await databaseMethod.retrieveCoursesByEmail(email);
-    if (courses.length == 0) {
-        res.statusCode = 500;
-        console.error("ERROR code: server.js02 : 0 line response for email: " + email);
-        res.json({
-            error: "ERROR code: server.js02 : 0 line response for email:"
-        });
-    }
+});
+
+app.get('/webserver/transferOwnership', async function(req, res){
+    console.log("transferOwnership called")
     res.statusCode = 200;
-    res.json(courses);
+    let courseName = req.query.courseName;
+    let ownerEmail = req.query.ownerEmail;
+    let newOwnerEmail = req.query.newOwnerEmail;
+    await databaseMethod.transferOwnershipOfCourse(courseName,ownerEmail,newOwnerEmail);
+
 });
 
 
+app.get('/webserver/deleteCourse', async function(req, res) {
+    console.log("delete cours called");
+    res.statusCode = 200;
+    let courseName = req.query.courseName;
+    let ownerEmail = req.query.ownerEmail;
+    try {
+        let query = await databaseMethod.deleteCourse(courseName, ownerEmail);
+    } catch (e) {
+        console.error("ERROR code : server.js14 : error deleting course:" + e);
+        res.statusCode = 500;
+    }
+    res.send()
+});
+
+app.get('/webserver/deleteWeek', async function(req, res) {
+    res.statusCode = 200;
+    let weekNumber = req.query.weekNumber;
+    let courseName = req.query.courseName;
+    try {
+        let query = await databaseMethod.deleteWeek(weekNumber, courseName);
+    } catch (e) {
+        console.error("ERROR code : server.js13 : error deleting week:" + e);
+        res.statusCode = 500;
+    }
+    res.send()
+});
 app.get('/webserver/addCourse', async function(req, res) {
     res.statusCode = 200;
     let courseName = req.query.courseName;
@@ -88,8 +122,9 @@ app.get('/webserver/getWeek', async function(req, res) {
     res.statusCode = 200;
     let weekNumber = req.query.weekNumber;
     let courseName = req.query.courseName;
+    let weekContents = [];
     try {
-        let weekContents = await databaseMethod.getWeek(courseName, weekNumber);
+        weekContents = await databaseMethod.getWeek(courseName, weekNumber);
     } catch (e) {
         console.error("ERROR code : server.js07 : error in get week: " + e);
         res.statusCode = 500;
@@ -102,10 +137,12 @@ app.get('/webserver/getNumberOfWeeks/', async function(req, res) { //TODO getCou
     res.setHeader('Content-Type', 'application/json');
     res.statusCode = 200;
     let courseName = req.query.courseName;
+    let courseInfo = []
     try {
-        let courseInfo = await databaseMethod.getNumberOfWeeksInACourse(courseName);
+        courseInfo = await databaseMethod.getNumberOfWeeksInACourse(courseName);
+
     } catch (e) {
-        console.error("ERROR code : server.js08 : error whilst getting number of weeks: "+e);
+        console.error("ERROR code : server.js08 : error whilst getting number of weeks: " + e);
         res.statusCode = 500;
     }
     res.json(courseInfo[0]);

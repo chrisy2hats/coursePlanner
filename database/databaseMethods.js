@@ -37,7 +37,11 @@ module.exports.addWeek = addWeek;
 async function updateWeek(weekNumber, courseName, topics, notesAndIdeas, resources) {
     const sql = await init();
     const query = sql.format(`update weeks set topics=?, notesAndIdeas =?, resources =? where weekNumber = ? and courseName = ? `, [topics, notesAndIdeas, resources, weekNumber, courseName]);
-    await sql.query(query);
+    try {
+        await sql.query(query);
+    } catch (e) {
+        console.error("ERROR code : databaseMethods.js11 : Error updating week: " + e);
+    }
 }
 module.exports.updateWeek = updateWeek;
 
@@ -85,12 +89,55 @@ async function retrieveCoursesByEmail(ownerEmail) {
     const [resultOfQuery] = await sql.query(query);
     if (resultOfQuery.length == 0) {
         console.error("ERROR code : databaseMethod.js03 : No courses assosiated with email: " + ownerEmail);
-        return ("ERROR code : databaseMethod.js03 : No courses assosiated with email: " + ownerEmail);
+        return ([]);
     }
     return (resultOfQuery);
 }
 module.exports.retrieveCoursesByEmail = retrieveCoursesByEmail;
 
+//Delete Functions
+
+
+async function deleteWeek(weekNumber, courseName) {
+    const sql = await init();
+    const query = sql.format(`delete from weeks where courseName = ? and weekNumber = ?`, [courseName, weekNumber]);
+    try {
+        await sql.query(query);
+    } catch (e) {
+        console.error("ERROR code : databaseMethods.js09 : error deleting week: " + e);
+    }
+}
+module.exports.deleteWeek = deleteWeek;
+
+async function deleteCourse(courseName, ownerEmail) {
+    const sql = await init();
+    const query = sql.format(`delete from courses where courseName = ? and ownerEmail= ?`, [courseName, ownerEmail]);
+    try {
+        await sql.query(query);
+    } catch (e) {
+        console.error("ERROR code : databaseMethods.js10 : error deleting course: " + e);
+    }
+}
+module.exports.deleteCourse = deleteCourse;
+
+async function transferOwnershipOfCourse(courseName,ownerEmail,newOwner) {
+    console.log("transferOwnershp to "+newOwner);
+    const sql = await init();
+        const query = sql.format(`update courses set ownerEmail =? where courseName = ? and ownerEmail = ? `, [newOwner,courseName, ownerEmail]);
+    try {
+    await sql.query(query);
+    } catch (e) {
+            console.error("ERROR code : databaseMethods.js12 : error transferingOwnership : "+e)
+    }
+}
+module.exports.transferOwnershipOfCourse = transferOwnershipOfCourse;
+
+async function addCollaborator() {
+
+}
+async function removeCollaborator() {
+
+}
 
 //Boilerplate code for mysql connections
 /*
