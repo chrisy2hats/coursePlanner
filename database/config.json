@@ -3,7 +3,6 @@
     "host": "localhost",
     "user": "root",
     "password": "",
-    "database": "coursePlannerDatabase",
-    "table": "courses"
+    "database": "coursePlannerDatabase"
   }
 }

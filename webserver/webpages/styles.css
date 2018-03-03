@@ -2,16 +2,20 @@
 TODO
 Actually use grid-area not just let elements fall into place1
 Reduce amount of CSS by combining classes
+ https://htmlcolorcodes.com/
  */
 
 main {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    grid-column-gap: 0.5em;
+    grid-column-gap: 1em;
     grid-template-rows: 0.125fr 1fr 0.0625fr;
     grid-template-areas: "head head head head" "weeksColumn topicsColumn notesColumn resourcesColumn" "footer footer footer footer";
     height: 95vh;
     width: 95vw;
+}
+body{
+    background-color:#F8F9F9;
 }
 
 #newWeekButton, #newTopicButton, #newNotesAndIdeasButton, #newResourceButton {
@@ -23,6 +27,7 @@ main {
     margin-top: 0.125em;
     margin-bottom: 0.125em;
     width: 95%;
+    border: 1em;
 }
 
 #logoutButton, #saveButton {
@@ -51,29 +56,35 @@ main {
     text-align: var(--column-text-alignment);
     grid-area: weeksColumn;
     border: var(--column-border);
-    background: blue;
+    /* background: #96858F; */
+    /* background: #666666; */
+    /* background: #778899; */
+    /* background: #9A7993; */
+    background: #D7CEC7;
 }
 
 #weeksColumnGrid {
     margin-top: 0.125em;
     margin-bottom: 0.25em;
     border: var(--column-border);
-    background: cyan;
+    background: lightgray;
     display: grid;
     grid-template-columns: 1fr;
 }
 
 .topicsColumn, .notesColumn {
     border: var(--column-border);
-    background: red;
+    /* background: #6D7993; */
+    background: #565656;
 }
 
 .notesColumn {
     border: var(--column-border);
-    background: green;
+    background: #76323F;
 }
 
 .resourcesColumn {
     border: var(--column-border);
-    background: orange;
+    /* background: #D5D5D5; */
+    background: #C09F80;
 }

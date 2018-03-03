@@ -6,8 +6,17 @@ document.getElementById('newNotesAndIdeasButton').addEventListener('click', addT
 document.getElementById('newResourceButton').addEventListener('click', addTextAreaToResources);
 document.getElementById('logoutButton').addEventListener('click', signOut);
 document.getElementById('saveButton').addEventListener('click', saveChanges);
+document.getElementById('newCourseButton').addEventListener('click', addCourse); //TODO
+document.getElementById('keyboardShortcutsButton').addEventListener('click', viewKeyboardShortcuts);
 document.getElementById('coursesDropdown').addEventListener('change', courseSelected);
 
+
+
+
+function viewKeyboardShortcuts() {
+    console.log("View keyboard shortcuts called");
+    alert("TODO");
+}
 //Functions that call the web server
 /*
  This function (populateCoursesDropdown) should retrieve all courses associated with the signed in users
@@ -34,24 +43,44 @@ async function populateCoursesDropdown() {
 TODO Explaination
 Needs to save changes before changing weeks.
 */
-async function switchToWeek(event, courseName, numberOfWeeks) { //Run when a specific week is clicked on
-    console.log("Switch to week called: " + numberOfWeeks);
+async function switchToWeek(event, courseName, weekNumber) { //Run when a specific week is clicked on
+    console.log("Switch to week called: " + courseName);
+    //Clearing columns so previous weeks contents doesn't linger
+    document.querySelector('.topicsColumn').innerHTML = "Topics";
+    document.querySelector('.notesColumn').innerHTML = "Notes and Ideas";
+    document.querySelector('.resourcesColumn').innerHTML = "Resources text";
     //TODO
-    courseName = "WEBF1";
-    weekNumber = 1;
-    // if (weeks[week].topics) addTextAreaToTopics(null, weeks[week].topics);
-    // if (weeks[week].notesAndIdeas) addTextAreaToNotes(null, weeks[week].notesAndIdeas);
-    // if (weeks[week].resources) addTextAreaToResources(null, weeks[week].resources);
     const url = '/webserver/getWeek?courseName=' + courseName + '&weekNumber=' + weekNumber;
     const response = await fetch(url);
+    console.log(courseName)
     if (response.ok) {
         let jsonResponse = await response.json();
-        addTextAreaToTopics(null, jsonResponse.topics);
-        addTextAreaToNotes(null, jsonResponse.notesAndIdeas);
-        addTextAreaToResources(null, jsonResponse.resources);
+        if (jsonResponse) {
+            console.log(weekNumber);
+            if (jsonResponse.topics) addTextAreaToTopics(null, jsonResponse.topics);
+            if (jsonResponse.notesAndIdeas) addTextAreaToNotes(null, jsonResponse.notesAndIdeas);
+            if (jsonResponse.resources) addTextAreaToResources(null, jsonResponse.resources);
+        }
     }
 }
+/*
+Get contents of text box and use their email as the owner
+*/
+async function addCourse() {
+    console.log("addCourse called");
+    let courseName = document.getElementById('newCourseTextField').value;
+    if (courseName) {
+        let email = window.userEmail;
+        const url = '/webserver/addCourse?courseName=' + courseName + '&ownerEmail=' + email;
+        let response = await fetch(url);
+        if (response.ok) {
+            console.log("ok response");
+            console.log(response.statusCode);
+            populateCoursesDropdown();
+        }
+    }
 
+}
 /*
 TODO Explaination
 Needs to load the number of weeks and the contents for the first week.
@@ -62,45 +91,124 @@ async function getNumberOfWeeks(courseName) {
     if (response.ok) {
         let jsonResponse = await response.json();
         let numberOfWeeks = jsonResponse[0].numOfWeeks;
-        //TODO change to a for in loop
-        for (let i = 0; i < numberOfWeeks; i++) addNewWeek();
+        return numberOfWeeks;
     }
 }
 
 
 /*
 TODO Explaination
-*/
+*/ //TODO
+
 async function saveChanges() {
     console.log("Save changes called");
-    console.log("WARNING. SAVE DOES NOTING AT THE MOMENT");
     //TODO update database then inform user save was successful
+    // let weeksColumnContents = document.querySelector('.weeksColumn').innerHTML;
+    // let topicsColumnContents = document.querySelector('.topicsColumn').innerHTML;
+    // let notesColumnContents = document.querySelector('.notesColumn').innerHTML;
+    // let resourcesColumnContents = document.querySelector('.resourcesColumn').innerHTML;
+    let weekNumber = 1; //TODO dynamically get this. Once event listenr worked out make the selected week a different colour
+    let dropDownList = document.querySelector('#coursesDropdown');
+    let coursesDropdown = document.getElementById('coursesDropdown');
+    let indexOfSelectCourse = coursesDropdown.selectedIndex;
+    if (indexOfSelectCourse != 0) {
+        let courseName = coursesDropdown.options[indexOfSelectCourse].text;
+        let topics = document.getElementById('topicsColumnTextArea').value;
+        let notesAndIdeas = "a loda  ideas";
+        let resources = "Mucho ideao";
+        const url = '/webserver/updateWeek?weekNumber=' + weekNumber + "&courseName=" + courseName + "&topics=" + topics + "&notesAndIdeas=" + notesAndIdeas + "&resources=" + resources;
+        //TODO check for undefined variables before sending
+        let response = await fetch(url);
+        if (response.ok) {
+            console.log("response OK" + response.textContent); //TODO bug this is undefined
+        }
+    }
 }
-
 /*
 TODO Explaination
 */
 async function courseSelected() {
     let coursesDropdown = document.getElementById('coursesDropdown');
-    let selectedCourse = coursesDropdown.options[coursesDropdown.selectedIndex].text;
+    let indexOfSelectCourse = coursesDropdown.selectedIndex;
+    let selectedCourse = coursesDropdown.options[indexOfSelectCourse].text;
     clearColumns();
-    getNumberOfWeeks(selectedCourse);
-    switchToWeek(null, selectedCourse, 1);
+    if (indexOfSelectCourse != 0) {; //Stops function if "Courses" is selected
+        let numberOfWeeks = await getNumberOfWeeks(selectedCourse);
+        for (let i = 0; i < numberOfWeeks; i++) addNewWeek(true); //true indicates it is loading weeks not creating weeks.
+        if (numberOfWeeks > 0) switchToWeek(null, selectedCourse, 1); //If statement protects from trying to load week 1 for empty course.
+    }
 }
 
 
 //Page interaction functions.(Run locally do not call the server.)
 /*
  This function (addNewWeek) should create a new box within the box labelled "Weeks". Each box should be "Week" followed by the week number.
+ @params load boolean to indicate if the new week is being loaded or created for the first time. If it is being created it should be added to the database.
 */
-function addNewWeek() {
-    let numberOfWeeks = document.querySelectorAll('#weeksColumnGrid').length + 1;
+function sayFoo(e) {
+    console.log("foo" + e);
+}
+function bindClick(i) {
+    return function(){
+             // console.log("you clicked region number " + i);
+             switchToWeek(null,i);
+           };
+ }
+async function addNewWeek(load) {
+    let numberOfWeeks = document.querySelectorAll('#weeksColumnGrid').length + 1; //TODO make this accurate. If I have 10 weeks and I delete week 4 the next week will be week 10 not 11
     let weeksColumn = document.querySelector('.weeksColumn');
     let weeksColumnContents = weeksColumn.innerHTML;
-    weeksColumn.innerHTML = weeksColumnContents + '<div id="weeksColumnGrid" draggable="true" >Week ' + numberOfWeeks + '</div>'; //TODO make this less hard coded
-    // let latestWeek = weeksColumn.childNodes[numberOfWeeks];
+    weeksColumn.innerHTML = weeksColumnContents + '<div id="weeksColumnGrid"  >Week ' + numberOfWeeks + '</div>'; //TODO make this less hard coded
+    //Adding the newly created week to the database
+    if (load != true) { //Cannot use "!load" as undefined would make the code run
+        if (window.userEmail) { //Checking they are signed in
+            //Adding new week to the database so the save button can run an update query on it
+            let dropDownList = document.querySelector('#coursesDropdown');
+            let coursesDropdown = document.getElementById('coursesDropdown');
+            let indexOfSelectCourse = coursesDropdown.selectedIndex;
+            if (indexOfSelectCourse != 0) {
+                let selectedCourse = coursesDropdown.options[indexOfSelectCourse].text;
+                const url = '/webserver/addWeek/?weekNumber=' + numberOfWeeks + '&courseName=' + selectedCourse;
+                let response = await fetch(url);
+                if (response.ok) {
+                    console.log("Response ok");
+                    console.log(response.statusCode);
+                }
+            }
+        }
+    }
+
+
+
     //TODO add event listener
+    let listOfWeeks = weeksColumn.children;
+    let latestWeek = listOfWeeks[listOfWeeks.length - 1];
+    // console.log(listOfWeeks[0]);
+    // for (let p =0;p<listOfWeeks.length;p)
+    console.log(weeksColumn.childNodes);
+    console.log(weeksColumn.childNodes[1]);
+    latestWeek.style.backgroundColor = "blue";
+
+
+    for (let i = 0; i < weeksColumn.childNodes.length; i++) {
+        weeksColumn.childNodes[i].addEventListener('click', bindClick(i));
+    }
+    // for (let i = 0; i < weeksColumn.childNodes.length; i++) {
+    //     weeksColumn.childNodes[i].addEventListener('click', bindClick(i));
+    // }
+        //     return function() {
+        //         sayFoo(numberOfWeeks)
+        //     }
+        // }(numberOfWeeks));
+    // }
 }
+        // weeksColumn.childNodes[i].addEventListener('click', function(numberOfWeeks) {
+        //     return function() {
+        //         sayFoo(numberOfWeeks)
+        //     }
+        // }(numberOfWeeks));
+
+
 
 /*
  This function (addTextAreaToTopics) should create a new text area within the box labelled "Topics".
@@ -139,7 +247,7 @@ Got to clear all 4 columns
 */
 function clearColumns() {
     document.querySelector('.weeksColumn').innerHTML = "Weeks";
-    // console.log("Cleared weeks column");
+    // console.log("Cleared weeks column");""j
     document.querySelector('.topicsColumn').innerHTML = "Topics";
     // console.log("Cleared topics Column");
     document.querySelector('.notesColumn').innerHTML = "Notes and Ideas";
