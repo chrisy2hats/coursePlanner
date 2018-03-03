@@ -85,17 +85,29 @@ app.get('/webserver/updateWeek', async function(req, res) {
 
 app.get('/webserver/getWeek', async function(req, res) {
     res.setHeader('Content-Type', 'application/json');
+    res.statusCode = 200;
     let weekNumber = req.query.weekNumber;
     let courseName = req.query.courseName;
-    let weekContents = await databaseMethod.getWeek(courseName, weekNumber);
+    try {
+        let weekContents = await databaseMethod.getWeek(courseName, weekNumber);
+    } catch (e) {
+        console.error("ERROR code : server.js07 : error in get week: " + e);
+        res.statusCode = 500;
+    }
     res.json(weekContents[0]);
 });
 
 
 app.get('/webserver/getNumberOfWeeks/', async function(req, res) { //TODO getCourses is probably not the best name
     res.setHeader('Content-Type', 'application/json');
+    res.statusCode = 200;
     let courseName = req.query.courseName;
-    let courseInfo = await databaseMethod.getNumberOfWeeksInACourse(courseName);
+    try {
+        let courseInfo = await databaseMethod.getNumberOfWeeksInACourse(courseName);
+    } catch (e) {
+        console.error("ERROR code : server.js08 : error whilst getting number of weeks: "+e);
+        res.statusCode = 500;
+    }
     res.json(courseInfo[0]);
 });
 

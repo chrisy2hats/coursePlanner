@@ -44,8 +44,11 @@ TODO Explaination
 Needs to save changes before changing weeks.
 */
 async function switchToWeek(event, courseName, weekNumber) { //Run when a specific week is clicked on
+    console.log("Switch to week called: " + weekNumber);
     console.log("Switch to week called: " + courseName);
+    saveChanges(); //Causing changes to be saved if a different week is clicked on.
     //Clearing columns so previous weeks contents doesn't linger
+    window.selectedWeek = weekNumber; //So saveChanges knows which week is selected
     document.querySelector('.topicsColumn').innerHTML = "Topics";
     document.querySelector('.notesColumn').innerHTML = "Notes and Ideas";
     document.querySelector('.resourcesColumn').innerHTML = "Resources text";
@@ -103,19 +106,17 @@ TODO Explaination
 async function saveChanges() {
     console.log("Save changes called");
     //TODO update database then inform user save was successful
-    // let weeksColumnContents = document.querySelector('.weeksColumn').innerHTML;
-    // let topicsColumnContents = document.querySelector('.topicsColumn').innerHTML;
-    // let notesColumnContents = document.querySelector('.notesColumn').innerHTML;
-    // let resourcesColumnContents = document.querySelector('.resourcesColumn').innerHTML;
-    let weekNumber = 1; //TODO dynamically get this. Once event listenr worked out make the selected week a different colour
+    let weekNumber = window.selectedWeek; //TODO Change this.Global variables eww
+    console.log("weekNumber in saveChanges"+weekNumber);
+
     let dropDownList = document.querySelector('#coursesDropdown');
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
     if (indexOfSelectCourse != 0) {
-        let courseName = coursesDropdown.options[indexOfSelectCourse].text;
-        let topics = document.getElementById('topicsColumnTextArea').value;
-        let notesAndIdeas = "a loda  ideas";
-        let resources = "Mucho ideao";
+    let    courseName = coursesDropdown.options[indexOfSelectCourse].text;
+        let topics = document.getElementById('topicsColumnTextArea') ? document.getElementById('topicsColumnTextArea').value : "";
+        let notesAndIdeas = document.getElementById('notesColumnTextArea') ? document.getElementById('notesColumnTextArea').value : "";
+        let resources = document.getElementById('resourcesColumnTextArea') ? document.getElementById('resourcesColumnTextArea').value : "";
         const url = '/webserver/updateWeek?weekNumber=' + weekNumber + "&courseName=" + courseName + "&topics=" + topics + "&notesAndIdeas=" + notesAndIdeas + "&resources=" + resources;
         //TODO check for undefined variables before sending
         let response = await fetch(url);
@@ -142,32 +143,32 @@ async function courseSelected() {
 
 //Page interaction functions.(Run locally do not call the server.)
 /*
+  Works by some magic called JavaScript closure
+ */
+function bindToSwitchToWeek(weekNumber, courseName) { //https://stackoverflow.com/questions/17981437/how-to-add-event-listeners-to-an-array-of-objects
+    return function() {
+        switchToWeek(null, courseName, weekNumber);
+    };
+}
+/*
  This function (addNewWeek) should create a new box within the box labelled "Weeks". Each box should be "Week" followed by the week number.
  @params load boolean to indicate if the new week is being loaded or created for the first time. If it is being created it should be added to the database.
 */
-function sayFoo(e) {
-    console.log("foo" + e);
-}
-function bindClick(i) {
-    return function(){
-             // console.log("you clicked region number " + i);
-             switchToWeek(null,i);
-           };
- }
 async function addNewWeek(load) {
+    console.log("add week called");
     let numberOfWeeks = document.querySelectorAll('#weeksColumnGrid').length + 1; //TODO make this accurate. If I have 10 weeks and I delete week 4 the next week will be week 10 not 11
     let weeksColumn = document.querySelector('.weeksColumn');
     let weeksColumnContents = weeksColumn.innerHTML;
     weeksColumn.innerHTML = weeksColumnContents + '<div id="weeksColumnGrid"  >Week ' + numberOfWeeks + '</div>'; //TODO make this less hard coded
+    let dropDownList = document.querySelector('#coursesDropdown');
+    let coursesDropdown = document.getElementById('coursesDropdown');
+    let indexOfSelectCourse = coursesDropdown.selectedIndex;
+    let selectedCourse = coursesDropdown.options[indexOfSelectCourse].text;
     //Adding the newly created week to the database
     if (load != true) { //Cannot use "!load" as undefined would make the code run
         if (window.userEmail) { //Checking they are signed in
             //Adding new week to the database so the save button can run an update query on it
-            let dropDownList = document.querySelector('#coursesDropdown');
-            let coursesDropdown = document.getElementById('coursesDropdown');
-            let indexOfSelectCourse = coursesDropdown.selectedIndex;
             if (indexOfSelectCourse != 0) {
-                let selectedCourse = coursesDropdown.options[indexOfSelectCourse].text;
                 const url = '/webserver/addWeek/?weekNumber=' + numberOfWeeks + '&courseName=' + selectedCourse;
                 let response = await fetch(url);
                 if (response.ok) {
@@ -177,38 +178,9 @@ async function addNewWeek(load) {
             }
         }
     }
-
-
-
-    //TODO add event listener
-    let listOfWeeks = weeksColumn.children;
-    let latestWeek = listOfWeeks[listOfWeeks.length - 1];
-    // console.log(listOfWeeks[0]);
-    // for (let p =0;p<listOfWeeks.length;p)
-    console.log(weeksColumn.childNodes);
-    console.log(weeksColumn.childNodes[1]);
-    latestWeek.style.backgroundColor = "blue";
-
-
-    for (let i = 0; i < weeksColumn.childNodes.length; i++) {
-        weeksColumn.childNodes[i].addEventListener('click', bindClick(i));
-    }
-    // for (let i = 0; i < weeksColumn.childNodes.length; i++) {
-    //     weeksColumn.childNodes[i].addEventListener('click', bindClick(i));
-    // }
-        //     return function() {
-        //         sayFoo(numberOfWeeks)
-        //     }
-        // }(numberOfWeeks));
-    // }
+    for (let i = 0; i < weeksColumn.childNodes.length; i++)
+        weeksColumn.childNodes[i].addEventListener('click', bindToSwitchToWeek(i, selectedCourse));
 }
-        // weeksColumn.childNodes[i].addEventListener('click', function(numberOfWeeks) {
-        //     return function() {
-        //         sayFoo(numberOfWeeks)
-        //     }
-        // }(numberOfWeeks));
-
-
 
 /*
  This function (addTextAreaToTopics) should create a new text area within the box labelled "Topics".
