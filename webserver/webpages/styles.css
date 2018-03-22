@@ -44,6 +44,10 @@ body{
     text-align: var(--header-text-alignment);
     --column-border: 2px solid black;
 }
+#settingsIcon{
+    width:2em;
+    height:2em;
+}
 
 .footer {
     grid-area: footer;
@@ -67,7 +71,7 @@ body{
     margin-top: 0.125em;
     margin-bottom: 0.25em;
     border: var(--column-border);
-    background: lightgray;
+    /* background: lightgray; */
     display: grid;
     grid-template-columns: 1fr;
 }
@@ -87,4 +91,7 @@ body{
     border: var(--column-border);
     /* background: #D5D5D5; */
     background: #C09F80;
+}
+.selected{
+    background-color:lightblue;
 }

@@ -1,9 +1,26 @@
+const GoogleAuth = require('simple-google-openid');
 const express = require('express');
 const app = express();
 const databaseMethod = require('../database/databaseMethods.js');
 
+let googleClientID = "424667604152-rh5b1c1fb52tqgqnf9lmau2vi826fa8i.apps.googleusercontent.com";
+app.use(GoogleAuth(googleClientID));
+app.use('/api', GoogleAuth.guardMiddleware());
+app.get('/api/hello', outputUserInfo);
+
+function outputUserInfo(req, res) {
+    try {
+        console.log(req.user.displayName);
+        console.log(req.user.emails[0].value);
+        console.log("id" + req.user.id);
+        res.send(req.user.displayName);
+    } catch (e) {
+        console.error("ERROR code : server.js04 : error getting user info: " + e);
+    }
+}
+
 //Serving of static pages.
-app.use('/', express.static('webpages', { //TODO this doesn't work if node is called from a different directory
+app.use('/', express.static('webpages', {
     extensions: ['html']
 }));
 
@@ -14,7 +31,6 @@ app.use('/', express.static('webpages', { //TODO this doesn't work if node is ca
  @return {JSON Object} Containing an array of the course names.
 */
 app.get('/webserver/getCourses/', async function(req, res) { //TODO getCourses is probably not the best name
-    res.setHeader('Content-Type', 'application/json');
     let email = req.query.email;
     if (!email) {
         res.statusCode = 500;
@@ -23,23 +39,24 @@ app.get('/webserver/getCourses/', async function(req, res) { //TODO getCourses i
     } else {
         let courses = await databaseMethod.retrieveCoursesByEmail(email);
         if (courses.length == 0) {
-            res.statusCode = 500;
+            // res.statusCode = 500;
             console.error("ERROR code: server.js02 : 0 line response for email: " + email);
-            res.send({});
+            res.send("You have no courses");
         } else {
+            res.setHeader('Content-Type', 'application/json');
             res.statusCode = 200;
             res.json(courses);
         }
     }
 });
 
-app.get('/webserver/transferOwnership', async function(req, res){
+app.get('/webserver/transferOwnership', async function(req, res) {
     console.log("transferOwnership called")
     res.statusCode = 200;
     let courseName = req.query.courseName;
     let ownerEmail = req.query.ownerEmail;
     let newOwnerEmail = req.query.newOwnerEmail;
-    await databaseMethod.transferOwnershipOfCourse(courseName,ownerEmail,newOwnerEmail);
+    await databaseMethod.transferOwnershipOfCourse(courseName, ownerEmail, newOwnerEmail);
 
 });
 
@@ -70,6 +87,7 @@ app.get('/webserver/deleteWeek', async function(req, res) {
     }
     res.send()
 });
+
 app.get('/webserver/addCourse', async function(req, res) {
     res.statusCode = 200;
     let courseName = req.query.courseName;
@@ -100,10 +118,14 @@ app.get('/webserver/addWeek', async function(req, res) {
 
 app.get('/webserver/updateWeek', async function(req, res) {
     res.setHeader('Content-Type', 'text/text');
+    console.log("updateWeek");
+
     res.statusCode = 200;
     let weekNumber = req.query.weekNumber;
+    console.log(weekNumber);
     let courseName = req.query.courseName;
     let topics = req.query.topics;
+    console.log(topics);
     let notesAndIdeas = req.query.notesAndIdeas;
     let resources = req.query.resources;
     try {
@@ -137,7 +159,7 @@ app.get('/webserver/getNumberOfWeeks/', async function(req, res) { //TODO getCou
     res.setHeader('Content-Type', 'application/json');
     res.statusCode = 200;
     let courseName = req.query.courseName;
-    let courseInfo = []
+    let courseInfo = [];
     try {
         courseInfo = await databaseMethod.getNumberOfWeeksInACourse(courseName);
 
