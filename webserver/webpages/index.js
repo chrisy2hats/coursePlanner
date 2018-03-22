@@ -20,9 +20,6 @@ document.getElementById('coursesDropdown').addEventListener('click', saveChanges
 Function kinda redundant as collaborators have the same access rights as owners atm
 */
 async function transferOwnershipOfCourse() {
-    // async function deleteWeek2() {
-    // async function transferOwnership(courseName,ownerEmail,newOwner) {
-    console.log("transferOwnershp called");
     let dropDownList = document.querySelector('#coursesDropdown');
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
@@ -30,7 +27,6 @@ async function transferOwnershipOfCourse() {
         let courseName = coursesDropdown.options[indexOfSelectCourse].text;
         let ownerEmail = window.userEmail;
         let newOwnerEmail = document.getElementById('newOwnerTextField').value;
-        console.log("newOwnerEmail" + newOwnerEmail);
         const url = '/webserver/transferOwnership?courseName=' + courseName + '&ownerEmail=' + ownerEmail + '&newOwnerEmail=' + newOwnerEmail;
         let response = await fetch(url);
         if (response.ok) {}
@@ -70,20 +66,17 @@ async function deleteCourse() {
 
 function addCollaborator() {
     console.log("addCollaborator called");
-
 }
 
 
 function viewKeyboardShortcuts() {
     console.log("View keyboard shortcuts called");
-    alert("TODO");
 }
 
 //Functions that call the web server
 /*
  This function (populateCoursesDropdown) should retrieve all courses associated with the signed in users
  and put these courses into a dropdown list. The courses should only be loaded if a user is signed in.
- TODO bug. List fills with "undefined" if I drop the database.
 */
 async function populateCoursesDropdown() {
     let email = window.userEmail;
@@ -102,20 +95,22 @@ async function populateCoursesDropdown() {
 }
 
 /*
-TODO Explaination
-Needs to save changes before changing weeks.
+ This function (switchToWeek) should be called when a user clicks on a week within the weeks column. It should load the week from the database and populate the columns. Before the database is retrieved changes made on the currently selected week should be saved. //TODO poorly written sentence
+ @params event  The event that has triggered the function to be called.This is usually a mouse click. This parameter should be disregarded.It automatically fills the first parameter when triggered from event listeners
+ @params courseName the name of the course to save the database under.
+ @params weekNumber the number of the week being switched to.
+ TODO Not use global to remember selected week
 */
-async function switchToWeek(event, courseName, weekNumber) { //Run when a specific week is clicked on
-    saveChanges(); //Causing changes to be saved if a different week is clicked on.
-    window.selectedWeek = weekNumber; //So saveChanges knows which week is selected //TODO remove global variable. Maybe use an object which is globally accessible
+async function switchToWeek(event, courseName, weekNumber) {
+    saveChanges(); //Saving changes to currently selected week
+    window.selectedWeek = weekNumber; //So saveChanges knows which week is selected
     clearColumns(false, true, true, true); //Clear all columns but the weeks column.Stops previous weeks contents lingerring
-    // console.log("switch"+profile);
 
     let weeksColumn = document.querySelector('.weeksColumn');
     let previousSelectedWeek = document.querySelector(".selected");
     if (previousSelectedWeek) previousSelectedWeek.classList.toggle("selected"); //A previous week may not be selected if an empty course is chosen
-    weeksColumn.childNodes[weekNumber].classList.toggle("selected");
 
+    weeksColumn.childNodes[weekNumber].classList.toggle("selected");
 
     const url = '/webserver/getWeek?courseName=' + courseName + '&weekNumber=' + weekNumber;
     const response = await fetch(url);
@@ -123,7 +118,6 @@ async function switchToWeek(event, courseName, weekNumber) { //Run when a specif
     if (response.ok) {
         let jsonResponse = await response.json();
         if (jsonResponse) {
-            console.log(jsonResponse.topics);
             if (jsonResponse.topics) addTextAreaToTopics(null, jsonResponse.topics);
             if (jsonResponse.notesAndIdeas) addTextAreaToNotes(null, jsonResponse.notesAndIdeas);
             if (jsonResponse.resources) addTextAreaToResources(null, jsonResponse.resources);
@@ -135,17 +129,15 @@ async function switchToWeek(event, courseName, weekNumber) { //Run when a specif
 
 /*
 Get contents of text box and use their email as the owner
+TODO explanation
 */
 async function addCourse() {
-    console.log("addCourse called");
     let courseName = document.getElementById('newCourseTextField').value;
     if (courseName) {
         let email = window.userEmail;
         const url = '/webserver/addCourse?courseName=' + courseName + '&ownerEmail=' + email;
         let response = await fetch(url);
         if (response.ok) {
-            console.log("ok response");
-            console.log(response.statusCode);
             populateCoursesDropdown();
         }
         addNewWeek();
@@ -171,11 +163,11 @@ async function getNumberOfWeeks(courseName) {
 /*
 TODO Explaination
 */
-function nodeListToArray(nodeList) {
+function nodeListToJSON(nodeList) {
     let array = [];
-    nodeList.forEach(x => {
-        if (x.value != "") { //Stops blade text areas being saved
-            array.push(x.value);
+    nodeList.forEach(element => {
+        if (element.value != "" && element.value != null) { //Stops blank text areas being saved
+            array.push(element.value);
         }
     });
     if (array.length != 0) {
@@ -196,23 +188,20 @@ async function saveChanges() {
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
     if (indexOfSelectCourse != 0) {
         let topicsTextAreas = document.querySelectorAll('#topicsColumnTextArea');
-        console.log("topicsTextAreas");
-        console.log(topicsTextAreas);
         let notesTextAreas = document.querySelectorAll('#notesColumnTextArea');
         let resourcesTextAreas = document.querySelectorAll('#resourcesColumnTextArea');
-        let arrayOfTopicsText = nodeListToArray(topicsTextAreas);
-        let arrayOfNotesText = nodeListToArray(notesTextAreas);
-        let arrayOfResourcesText = nodeListToArray(resourcesTextAreas);
+        let arrayOfTopicsText = nodeListToJSON(topicsTextAreas);
+        let arrayOfNotesText = nodeListToJSON(notesTextAreas);
+        let arrayOfResourcesText = nodeListToJSON(resourcesTextAreas);
         let courseName = coursesDropdown.options[indexOfSelectCourse].text;
         const url = '/webserver/updateWeek?weekNumber=' + weekNumber + "&courseName=" + courseName + "&topics=" + arrayOfTopicsText + "&notesAndIdeas=" + arrayOfNotesText + "&resources=" + arrayOfResourcesText;
 
-        //TODO check for undefined variables before sending
         let response = await fetch(url);
         if (response.ok) {
-            console.log("response OK" + response.textContent); //TODO bug this is undefined
         }
     }
 }
+
 /*
 TODO Explaination
 */
@@ -245,11 +234,10 @@ function bindToSwitchToWeek(weekNumber, courseName) { //https://stackoverflow.co
  @params load boolean to indicate if the new week is being loaded or created for the first time. If it is being created it should be added to the database.
 */
 async function addNewWeek(load) {
-    console.log("add week called");
     let numberOfWeeks = document.querySelectorAll('#weeksColumnGrid').length + 1; //TODO make this accurate. If I have 10 weeks and I delete week 4 the next week will be week 10 not 11. Could use a regex search for numbers on the last child element on the column.
     let weeksColumn = document.querySelector('.weeksColumn');
     let weeksColumnContents = weeksColumn.innerHTML;
-    weeksColumn.innerHTML = weeksColumnContents + '<div id="weeksColumnGrid"  >Week ' + numberOfWeeks + '</div>'; //TODO make this less hard coded
+    weeksColumn.innerHTML = weeksColumnContents + '<div id="weeksColumnGrid"  >Week ' + numberOfWeeks + '</div>';
     let dropDownList = document.querySelector('#coursesDropdown');
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
@@ -267,7 +255,7 @@ async function addNewWeek(load) {
             }
         }
     }
-    for (let i = 0; i < weeksColumn.childNodes.length; i++)
+    for (let i = 0; i < weeksColumn.childNodes.length; i++) //TODO try to use a map here
         weeksColumn.childNodes[i].addEventListener('click', bindToSwitchToWeek(i, selectedCourse));
 }
 
@@ -276,13 +264,13 @@ async function addNewWeek(load) {
 */
 function addTextAreaToTopics(event, contents) {
     let topicsColumn = document.querySelector('.topicsColumn');
-    if (!contents) {
+    try {
+        contents = JSON.parse(contents) //Will fail if contents is undefined
+        contents.map(element => {
+            topicsColumn.innerHTML += '<textarea id="topicsColumnTextArea"  placeholder="Enter Text">' + element + '</textarea>'
+        });
+    } catch (e) {
         topicsColumn.innerHTML += '<textarea id="topicsColumnTextArea"  placeholder="Enter Text"></textarea>'
-    } else {
-        contents = JSON.parse(contents);
-        for (i in contents) {
-            topicsColumn.innerHTML += '<textarea id="topicsColumnTextArea"  placeholder="Enter Text">' + contents[i] + '</textarea>'
-        }
     }
 }
 
@@ -290,18 +278,31 @@ function addTextAreaToTopics(event, contents) {
  This function (addTextAreaToNotes) should create a new text area within the box labelled "Notes and ideas".
 */
 function addTextAreaToNotes(event, contents) {
-    if (!contents) contents = ""; //Stops undefined being put inside the box.
     let notesColumn = document.querySelector('.notesColumn');
-    notesColumn.innerHTML += '<textarea id="notesColumnTextArea"  placeholder="Enter Text">' + contents + '</textarea>'
+    try {
+        contents = JSON.parse(contents) //Will fail if contents is undefined
+        contents.map(element => {
+            notesColumn.innerHTML += '<textarea id="notesColumnTextArea"  placeholder="Enter Text">' + element + '</textarea>'
+        });
+    } catch (e) {
+        notesColumn.innerHTML += '<textarea id="notesColumnTextArea"  placeholder="Enter Text"></textarea>'
+    }
 }
+
 
 /*
  This function (addTextAreaToResources) should create a new text area within the box labelled "Resources text".
 */
 function addTextAreaToResources(event, contents) {
-    if (!contents) contents = ""; //Stops undefined being up in the box.
     let resourcesColumn = document.querySelector('.resourcesColumn');
-    resourcesColumn.innerHTML += '<textarea id="resourcesColumnTextArea"  placeholder="Enter Text">' + contents + '</textarea>'
+    try {
+        contents = JSON.parse(contents) //Will fail if contents is undefined
+        contents.map(element => {
+            resourcesColumn.innerHTML += '<textarea id="resourcesColumnTextArea"  placeholder="Enter Text">' + element + '</textarea>'
+        });
+    } catch (e) {
+        resourcesColumn.innerHTML += '<textarea id="resourcesColumnTextArea"  placeholder="Enter Text"></textarea>'
+    }
 }
 
 
@@ -344,11 +345,8 @@ function signOut() {
     auth2.signOut().then(function() {
         clearColumns(true, true, true, true);
         document.querySelector('#coursesDropdown').innerHTML = '<option value = "0">Courses</option>>';
-        console.log("Drop down list of courses emptied");
         document.getElementById('logoutButton').style.visibility = "hidden";
-        console.log("Making logout button invisible");
         document.getElementById('saveButton').style.visibility = "hidden";
-        console.log("Making Save button invisible");
         console.log('User signed out.');
     });
 }

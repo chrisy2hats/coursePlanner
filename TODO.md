@@ -10,6 +10,7 @@ Database
 
 UI:
 - [ ] Add keyboard shortcuts for power users. Recommended by Rich
+Admin accounts . Recommended by Rich
 
 
 
@@ -19,3 +20,5 @@ UI:
 Make images cache
 
 If the user creates a course then doesn't reload nothig is  saved
+
+If two users name courses the same they are the same course in the database.
