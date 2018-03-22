@@ -14,9 +14,13 @@ document.getElementById('transferOwnershipButton').addEventListener('click', tra
 // document.getElementById('removeCollaboratorButton').addEventListener('click', removeCollaborator);
 // document.getElementById('keyboardShortcutsButton').addEventListener('click', viewKeyboardShortcuts);
 document.getElementById('coursesDropdown').addEventListener('change', courseSelected);
+document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
 
+/*
+Function kinda redundant as collaborators have the same access rights as owners atm
+*/
 async function transferOwnershipOfCourse() {
-// async function deleteWeek2() {
+    // async function deleteWeek2() {
     // async function transferOwnership(courseName,ownerEmail,newOwner) {
     console.log("transferOwnershp called");
     let dropDownList = document.querySelector('#coursesDropdown');
@@ -29,8 +33,7 @@ async function transferOwnershipOfCourse() {
         console.log("newOwnerEmail" + newOwnerEmail);
         const url = '/webserver/transferOwnership?courseName=' + courseName + '&ownerEmail=' + ownerEmail + '&newOwnerEmail=' + newOwnerEmail;
         let response = await fetch(url);
-        if (response.ok) {
-        }
+        if (response.ok) {}
     }
 }
 
@@ -45,9 +48,7 @@ async function deleteWeek() {
         let courseName = coursesDropdown.options[indexOfSelectCourse].text;
         const url = '/webserver/deleteWeek?weekNumber=' + weekNumber + "&courseName=" + courseName
         let response = await fetch(url);
-        if (response.ok) {
-            //TODO
-        }
+        if (!response.ok) console.error("ERROR error delete week: ");
     }
 }
 
@@ -65,7 +66,6 @@ async function deleteCourse() {
             //TODO
         }
     }
-
 }
 
 function addCollaborator() {
@@ -73,16 +73,12 @@ function addCollaborator() {
 
 }
 
-function transferOwnership() {
-
-}
-
-
 
 function viewKeyboardShortcuts() {
     console.log("View keyboard shortcuts called");
     alert("TODO");
 }
+
 //Functions that call the web server
 /*
  This function (populateCoursesDropdown) should retrieve all courses associated with the signed in users
@@ -110,28 +106,33 @@ TODO Explaination
 Needs to save changes before changing weeks.
 */
 async function switchToWeek(event, courseName, weekNumber) { //Run when a specific week is clicked on
-    console.log("Switch to week called: " + weekNumber);
-    console.log("Switch to week called: " + courseName);
     saveChanges(); //Causing changes to be saved if a different week is clicked on.
-    //Clearing columns so previous weeks contents doesn't linger
-    window.selectedWeek = weekNumber; //So saveChanges knows which week is selected
-    document.querySelector('.topicsColumn').innerHTML = "Topics";
-    document.querySelector('.notesColumn').innerHTML = "Notes and Ideas";
-    document.querySelector('.resourcesColumn').innerHTML = "Resources text";
-    //TODO
+    window.selectedWeek = weekNumber; //So saveChanges knows which week is selected //TODO remove global variable. Maybe use an object which is globally accessible
+    clearColumns(false, true, true, true); //Clear all columns but the weeks column.Stops previous weeks contents lingerring
+    // console.log("switch"+profile);
+
+    let weeksColumn = document.querySelector('.weeksColumn');
+    let previousSelectedWeek = document.querySelector(".selected");
+    if (previousSelectedWeek) previousSelectedWeek.classList.toggle("selected"); //A previous week may not be selected if an empty course is chosen
+    weeksColumn.childNodes[weekNumber].classList.toggle("selected");
+
+
     const url = '/webserver/getWeek?courseName=' + courseName + '&weekNumber=' + weekNumber;
     const response = await fetch(url);
-    console.log(courseName)
+
     if (response.ok) {
         let jsonResponse = await response.json();
         if (jsonResponse) {
-            console.log(weekNumber);
+            console.log(jsonResponse.topics);
             if (jsonResponse.topics) addTextAreaToTopics(null, jsonResponse.topics);
             if (jsonResponse.notesAndIdeas) addTextAreaToNotes(null, jsonResponse.notesAndIdeas);
             if (jsonResponse.resources) addTextAreaToResources(null, jsonResponse.resources);
         }
+    } else {
+        console.error("ERROR switching to week:" + weekNumber + " course: " + courseName);
     }
 }
+
 /*
 Get contents of text box and use their email as the owner
 */
@@ -147,9 +148,11 @@ async function addCourse() {
             console.log(response.statusCode);
             populateCoursesDropdown();
         }
+        addNewWeek();
+        switchToWeek(null, courseName, 1);
     }
-
 }
+
 /*
 TODO Explaination
 Needs to load the number of weeks and the contents for the first week.
@@ -167,23 +170,42 @@ async function getNumberOfWeeks(courseName) {
 
 /*
 TODO Explaination
-*/ //TODO
+*/
+function nodeListToArray(nodeList) {
+    let array = [];
+    nodeList.forEach(x => {
+        if (x.value != "") { //Stops blade text areas being saved
+            array.push(x.value);
+        }
+    });
+    if (array.length != 0) {
+        return JSON.stringify(array);
+    } else {
+        return undefined;
+    }
+}
 
+/*
+TODO Explaination
+*/
 async function saveChanges() {
-    console.log("Save changes called");
     //TODO update database then inform user save was successful
     let weekNumber = window.selectedWeek; //TODO Change this.Global variables eww
-    console.log("weekNumber in saveChanges" + weekNumber);
-
     let dropDownList = document.querySelector('#coursesDropdown');
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
     if (indexOfSelectCourse != 0) {
+        let topicsTextAreas = document.querySelectorAll('#topicsColumnTextArea');
+        console.log("topicsTextAreas");
+        console.log(topicsTextAreas);
+        let notesTextAreas = document.querySelectorAll('#notesColumnTextArea');
+        let resourcesTextAreas = document.querySelectorAll('#resourcesColumnTextArea');
+        let arrayOfTopicsText = nodeListToArray(topicsTextAreas);
+        let arrayOfNotesText = nodeListToArray(notesTextAreas);
+        let arrayOfResourcesText = nodeListToArray(resourcesTextAreas);
         let courseName = coursesDropdown.options[indexOfSelectCourse].text;
-        let topics = document.getElementById('topicsColumnTextArea') ? document.getElementById('topicsColumnTextArea').value : "";
-        let notesAndIdeas = document.getElementById('notesColumnTextArea') ? document.getElementById('notesColumnTextArea').value : "";
-        let resources = document.getElementById('resourcesColumnTextArea') ? document.getElementById('resourcesColumnTextArea').value : "";
-        const url = '/webserver/updateWeek?weekNumber=' + weekNumber + "&courseName=" + courseName + "&topics=" + topics + "&notesAndIdeas=" + notesAndIdeas + "&resources=" + resources;
+        const url = '/webserver/updateWeek?weekNumber=' + weekNumber + "&courseName=" + courseName + "&topics=" + arrayOfTopicsText + "&notesAndIdeas=" + arrayOfNotesText + "&resources=" + arrayOfResourcesText;
+
         //TODO check for undefined variables before sending
         let response = await fetch(url);
         if (response.ok) {
@@ -198,16 +220,18 @@ async function courseSelected() {
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
     let selectedCourse = coursesDropdown.options[indexOfSelectCourse].text;
-    clearColumns();
+    clearColumns(true, true, true, true);
     if (indexOfSelectCourse != 0) {; //Stops function if "Courses" is selected
+        //TODO set save button to allowed using cursor: allowed;
         let numberOfWeeks = await getNumberOfWeeks(selectedCourse);
         for (let i = 0; i < numberOfWeeks; i++) addNewWeek(true); //true indicates it is loading weeks not creating weeks.
         if (numberOfWeeks > 0) switchToWeek(null, selectedCourse, 1); //If statement protects from trying to load week 1 for empty course.
+    } else {
+        //TODO set save button to not allowed using cursor: not-allowed;
     }
 }
 
 
-//Page interaction functions.(Run locally do not call the server.)
 /*
   Works by some magic called JavaScript closure
  */
@@ -222,7 +246,7 @@ function bindToSwitchToWeek(weekNumber, courseName) { //https://stackoverflow.co
 */
 async function addNewWeek(load) {
     console.log("add week called");
-    let numberOfWeeks = document.querySelectorAll('#weeksColumnGrid').length + 1; //TODO make this accurate. If I have 10 weeks and I delete week 4 the next week will be week 10 not 11
+    let numberOfWeeks = document.querySelectorAll('#weeksColumnGrid').length + 1; //TODO make this accurate. If I have 10 weeks and I delete week 4 the next week will be week 10 not 11. Could use a regex search for numbers on the last child element on the column.
     let weeksColumn = document.querySelector('.weeksColumn');
     let weeksColumnContents = weeksColumn.innerHTML;
     weeksColumn.innerHTML = weeksColumnContents + '<div id="weeksColumnGrid"  >Week ' + numberOfWeeks + '</div>'; //TODO make this less hard coded
@@ -238,8 +262,7 @@ async function addNewWeek(load) {
                 const url = '/webserver/addWeek/?weekNumber=' + numberOfWeeks + '&courseName=' + selectedCourse;
                 let response = await fetch(url);
                 if (response.ok) {
-                    console.log("Response ok");
-                    console.log(response.statusCode);
+                    //TODO something  here
                 }
             }
         }
@@ -252,20 +275,24 @@ async function addNewWeek(load) {
  This function (addTextAreaToTopics) should create a new text area within the box labelled "Topics".
 */
 function addTextAreaToTopics(event, contents) {
-    if (!contents) contents = ""; //Stops undefined being up in the box.
     let topicsColumn = document.querySelector('.topicsColumn');
-    let topicsColumnContents = topicsColumn.innerHTML;
-    topicsColumn.innerHTML = topicsColumnContents + '<textarea id="topicsColumnTextArea"  placeholder="Enter Text">' + contents + '</textarea>'
+    if (!contents) {
+        topicsColumn.innerHTML += '<textarea id="topicsColumnTextArea"  placeholder="Enter Text"></textarea>'
+    } else {
+        contents = JSON.parse(contents);
+        for (i in contents) {
+            topicsColumn.innerHTML += '<textarea id="topicsColumnTextArea"  placeholder="Enter Text">' + contents[i] + '</textarea>'
+        }
+    }
 }
 
 /*
  This function (addTextAreaToNotes) should create a new text area within the box labelled "Notes and ideas".
 */
 function addTextAreaToNotes(event, contents) {
-    if (!contents) contents = ""; //Stops undefined being up in the box.
+    if (!contents) contents = ""; //Stops undefined being put inside the box.
     let notesColumn = document.querySelector('.notesColumn');
-    let notesColumnContents = notesColumn.innerHTML;
-    notesColumn.innerHTML = notesColumnContents + '<textarea id="notesColumnTextArea"  placeholder="Enter Text">' + contents + '</textarea>'
+    notesColumn.innerHTML += '<textarea id="notesColumnTextArea"  placeholder="Enter Text">' + contents + '</textarea>'
 }
 
 /*
@@ -274,8 +301,7 @@ function addTextAreaToNotes(event, contents) {
 function addTextAreaToResources(event, contents) {
     if (!contents) contents = ""; //Stops undefined being up in the box.
     let resourcesColumn = document.querySelector('.resourcesColumn');
-    let resourcesColumnContents = resourcesColumn.innerHTML;
-    resourcesColumn.innerHTML = resourcesColumnContents + '<textarea id="resourcesColumnTextArea"  placeholder="Enter Text">' + contents + '</textarea>'
+    resourcesColumn.innerHTML += '<textarea id="resourcesColumnTextArea"  placeholder="Enter Text">' + contents + '</textarea>'
 }
 
 
@@ -283,15 +309,11 @@ function addTextAreaToResources(event, contents) {
 TODO Explaination
 Got to clear all 4 columns
 */
-function clearColumns() {
-    document.querySelector('.weeksColumn').innerHTML = "Weeks";
-    // console.log("Cleared weeks column");""j
-    document.querySelector('.topicsColumn').innerHTML = "Topics";
-    // console.log("Cleared topics Column");
-    document.querySelector('.notesColumn').innerHTML = "Notes and Ideas";
-    // console.log("Cleared Notes and Ideas column");
-    document.querySelector('.resourcesColumn').innerHTML = "Resources text";
-    // console.log("Cleared Resources text");
+function clearColumns(weeks, topics, notes, resources) {
+    if (weeks) document.querySelector('.weeksColumn').innerHTML = "Weeks";
+    if (topics) document.querySelector('.topicsColumn').innerHTML = "Topics";
+    if (notes) document.querySelector('.notesColumn').innerHTML = "Notes and Ideas";
+    if (resources) document.querySelector('.resourcesColumn').innerHTML = "Resources text";
 }
 
 
@@ -320,7 +342,7 @@ function signOut() {
     window.userEmail = undefined;
     var auth2 = gapi.auth2.getAuthInstance();
     auth2.signOut().then(function() {
-        clearColumns();
+        clearColumns(true, true, true, true);
         document.querySelector('#coursesDropdown').innerHTML = '<option value = "0">Courses</option>>';
         console.log("Drop down list of courses emptied");
         document.getElementById('logoutButton').style.visibility = "hidden";
@@ -330,3 +352,34 @@ function signOut() {
         console.log('User signed out.');
     });
 }
+
+async function callServer() {
+    const id_token = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token;
+
+    const fetchOptions = {
+        credentials: 'same-origin',
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + id_token
+        },
+    };
+    const response = await fetch('/api/hello', fetchOptions);
+    if (!response.ok) {
+        // handle the error
+        return;
+    }
+    // handle the response
+}
+
+(function() {
+    const CHECK_DELAY = 2000;
+    let lastTime = Date.now();
+
+    setInterval(() => {
+        const currentTime = Date.now();
+        if (currentTime > (lastTime + CHECK_DELAY * 2)) { // ignore small delays
+            gapi.auth2.getAuthInstance().currentUser.get().reloadAuthResponse();
+        }
+        lastTime = currentTime;
+    }, CHECK_DELAY);
+}());
