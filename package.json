@@ -1,0 +1,29 @@
+{
+  "name": "courseplanner",
+  "version": "1.0.0",
+  "description": "Course Planner",
+  "main": "webserver/server.js",
+  "dependencies": {
+    "express": "^4.16.2",
+    "mysql2": "^1.5.2",
+    "simple-google-openid": "^0.2.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "cd webserver && node server.js",
+    "testinitsql": "mysql -u root -p < database/testInitDatabase.sql",
+    "initsql": "mysql -u root -p < database/initDatabase.sql",
+    "dropDatabase": "mysql --execute='drop database coursePlannerDatabase' -u root -p",
+    "dashboard": "cd webserver && node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chrisfoster4/courseplanner.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chrisfoster4/courseplanner/issues"
+  },
+  "homepage": "https://github.com/chrisfoster4/courseplanner#readme"
+}
