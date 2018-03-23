@@ -15,6 +15,7 @@ document.getElementById('transferOwnershipButton').addEventListener('click', tra
 // document.getElementById('keyboardShortcutsButton').addEventListener('click', viewKeyboardShortcuts);
 document.getElementById('coursesDropdown').addEventListener('change', courseSelected);
 document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
+document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
 
 function getCurrentWeek() {
     let href = window.location.href;
@@ -31,7 +32,7 @@ function getCourseName() {
 }
 
 function setCoursesDropdown(courseName) {
-    console.log("setting to"+courseName);
+    console.log("setting to" + courseName);
     let coursesDropdown = document.getElementById('coursesDropdown');
     for (let i = 0; i < coursesDropdown.length; i++) {
         if (coursesDropdown.options[i].text == courseName) {
@@ -41,10 +42,10 @@ function setCoursesDropdown(courseName) {
     }
 }
 
-function setUrlParams(weekNumber,courseName){
+function setUrlParams(weekNumber, courseName) {
     if (!weekNumber) weekNumber = getCurrentWeek();
     if (!courseName) courseName = getCourseName();
-    document.location.search = `?currentWeek=${weekNumber}&courseName=${courseName}`;
+    history.pushState(null, null, `/?currentWeek=${weekNumber}&courseName=${courseName}`);
 }
 
 /*
@@ -132,23 +133,27 @@ async function populateCoursesDropdown() {
  @params weekNumber the number of the week being switched to.
  TODO Not use global to remember selected week
 */
-async function switchToWeek(event, courseName, weekNumber) {
-    saveChanges(); //Saving changes to currently selected week
-    window.selectedWeek = weekNumber; //So saveChanges knows which week is selected
+async function switchToWeek() {
+    // switchToWeek
+    // saveChanges(); //Saving changes to currently selected week
+    let courseName = getCourseName();
+    let weekNumber = getCurrentWeek();
     clearColumns(false, true, true, true); //Clear all columns but the weeks column.Stops previous weeks contents lingerring
 
     let weeksColumn = document.querySelector('.weeksColumn');
     let previousSelectedWeek = document.querySelector(".selected");
     if (previousSelectedWeek) previousSelectedWeek.classList.toggle("selected"); //A previous week may not be selected if an empty course is chosen
 
-    weeksColumn.childNodes[weekNumber].classList.toggle("selected");
+    if (weeksColumn.childNodes[weekNumber])
+        weeksColumn.childNodes[weekNumber].classList.toggle("selected");
 
     const url = '/webserver/getWeek?courseName=' + courseName + '&weekNumber=' + weekNumber;
     const response = await fetch(url);
-
+    console.log("loading"+weekNumber +"of"+courseName);
     if (response.ok) {
         let jsonResponse = await response.json();
         if (jsonResponse) {
+
             if (jsonResponse.topics) addTextAreaToTopics(null, jsonResponse.topics);
             if (jsonResponse.notesAndIdeas) addTextAreaToNotes(null, jsonResponse.notesAndIdeas);
             if (jsonResponse.resources) addTextAreaToResources(null, jsonResponse.resources);
@@ -171,8 +176,10 @@ async function addCourse() {
         if (response.ok) {
             populateCoursesDropdown();
         }
-        addNewWeek();
-        switchToWeek(null, courseName, 1);
+        await addNewWeek();
+        setUrlParams(1,courseName);
+        await switchToWeek();
+        setCoursesDropdown(courseName);
     }
 }
 
@@ -213,7 +220,7 @@ TODO Explaination
 */
 async function saveChanges() {
     //TODO update database then inform user save was successful
-    let weekNumber = window.selectedWeek; //TODO Change this.Global variables eww
+    let weekNumber = getCurrentWeek();
     let dropDownList = document.querySelector('#coursesDropdown');
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
@@ -222,14 +229,16 @@ async function saveChanges() {
         let notesTextAreas = document.querySelectorAll('#notesColumnTextArea');
         let resourcesTextAreas = document.querySelectorAll('#resourcesColumnTextArea');
         let arrayOfTopicsText = nodeListToJSON(topicsTextAreas);
+        console.log("saving topics contents as :"+arrayOfTopicsText);
         let arrayOfNotesText = nodeListToJSON(notesTextAreas);
         let arrayOfResourcesText = nodeListToJSON(resourcesTextAreas);
-        let courseName = coursesDropdown.options[indexOfSelectCourse].text;
+        let courseName = getCourseName();
+
+        console.log("Saving changes to:"+courseName+"week:"+weekNumber);
         const url = '/webserver/updateWeek?weekNumber=' + weekNumber + "&courseName=" + courseName + "&topics=" + arrayOfTopicsText + "&notesAndIdeas=" + arrayOfNotesText + "&resources=" + arrayOfResourcesText;
 
         let response = await fetch(url);
-        if (response.ok) {
-        }
+        if (response.ok) {}
     }
 }
 
@@ -240,6 +249,10 @@ async function courseSelected() {
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
     let selectedCourse = coursesDropdown.options[indexOfSelectCourse].text;
+    await saveChanges();
+    setUrlParams(1,selectedCourse);
+    console.log("changingToCourse"+selectedCourse);
+    // saveChanges();
     clearColumns(true, true, true, true);
     if (indexOfSelectCourse != 0) {; //Stops function if "Courses" is selected
         //TODO set save button to allowed using cursor: allowed;
@@ -257,7 +270,11 @@ async function courseSelected() {
  */
 function bindToSwitchToWeek(weekNumber, courseName) { //https://stackoverflow.com/questions/17981437/how-to-add-event-listeners-to-an-array-of-objects
     return function() {
+        saveChanges();
+        clearColumns(false,true,true,true);
+        setUrlParams(weekNumber, courseName);
         switchToWeek(null, courseName, weekNumber);
+
     };
 }
 /*
