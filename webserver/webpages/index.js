@@ -16,6 +16,37 @@ document.getElementById('transferOwnershipButton').addEventListener('click', tra
 document.getElementById('coursesDropdown').addEventListener('change', courseSelected);
 document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
 
+function getCurrentWeek() {
+    let href = window.location.href;
+    let url = new URL(href);
+    let week = url.searchParams.get("currentWeek");
+    return week;
+}
+
+function getCourseName() {
+    let href = window.location.href;
+    let url = new URL(href);
+    let week = url.searchParams.get("courseName");
+    return week;
+}
+
+function setCoursesDropdown(courseName) {
+    console.log("setting to"+courseName);
+    let coursesDropdown = document.getElementById('coursesDropdown');
+    for (let i = 0; i < coursesDropdown.length; i++) {
+        if (coursesDropdown.options[i].text == courseName) {
+            coursesDropdown.selectedIndex = i;
+            break;
+        }
+    }
+}
+
+function setUrlParams(weekNumber,courseName){
+    if (!weekNumber) weekNumber = getCurrentWeek();
+    if (!courseName) courseName = getCourseName();
+    document.location.search = `?currentWeek=${weekNumber}&courseName=${courseName}`;
+}
+
 /*
 Function kinda redundant as collaborators have the same access rights as owners atm
 */
