@@ -16,6 +16,17 @@ document.getElementById('transferOwnershipButton').addEventListener('click', tra
 document.getElementById('coursesDropdown').addEventListener('change', courseSelected);
 document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
 document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
+document.getElementById('themeChanger').addEventListener("click", toggleTheme);
+
+
+function reportError(errorMessage, displayDuration) {
+    if (!displayDuration) displayDuration = 1000;
+    let errorReportSpace = document.getElementById("errorReporter");
+    errorReportSpace.textContent = errorMessage;
+    setTimeout(function() {
+        errorReportSpace.textContent = "";
+    }, displayDuration);
+}
 
 function getCurrentWeek() {
     let href = window.location.href;
@@ -42,10 +53,25 @@ function setCoursesDropdown(courseName) {
     }
 }
 
+function toggleTheme() {
+    //TODO make changes to theme presist over reloads by setting it as a url parameter
+    let button = document.getElementById('themeChanger');
+    let backgroundColor = document.body.style.backgroundColor;
+    if (backgroundColor == "black") {
+        document.body.style.backgroundColor = "#F8F9F9";
+        button.textContent = "Join the dark side!";
+    } else {
+        document.body.style.backgroundColor = "black";
+        button.textContent = "Join the rebel alliance!";
+    }
+}
+
+
 function setUrlParams(weekNumber, courseName) {
     if (!weekNumber) weekNumber = getCurrentWeek();
     if (!courseName) courseName = getCourseName();
-    history.pushState(null, null, `/?currentWeek=${weekNumber}&courseName=${courseName}`);
+    let theme = getTheme();
+    history.pushState(null, null, `/?theme=${theme}&currentWeek=${weekNumber}&courseName=${courseName}`); //Sets the URL of the page without a reload.
 }
 
 /*
@@ -59,7 +85,8 @@ async function transferOwnershipOfCourse() {
         let courseName = coursesDropdown.options[indexOfSelectCourse].text;
         let ownerEmail = window.userEmail;
         let newOwnerEmail = document.getElementById('newOwnerTextField').value;
-        const url = '/webserver/transferOwnership?courseName=' + courseName + '&ownerEmail=' + ownerEmail + '&newOwnerEmail=' + newOwnerEmail;
+        // const url = '/webserver/transferOwnership?courseName=' + courseName + '&ownerEmail=' + ownerEmail + '&newOwnerEmail=' + newOwnerEmail;
+        const url = `/webserver/transferOwnership?courseName=${courseName}&ownerEmail=${ownerEmail}&newOwnerEmail=${newOwnerEmail}`;
         let response = await fetch(url);
         if (response.ok) {}
     }
@@ -74,7 +101,7 @@ async function deleteWeek() {
     if (indexOfSelectCourse != 0) {
         let weekNumber = window.selectedWeek
         let courseName = coursesDropdown.options[indexOfSelectCourse].text;
-        const url = '/webserver/deleteWeek?weekNumber=' + weekNumber + "&courseName=" + courseName
+        const url = `/webserver/deleteWeek?weekNumber=${weekNumber}&courseName=${courseName}`;
         let response = await fetch(url);
         if (!response.ok) console.error("ERROR error delete week: ");
     }
@@ -88,7 +115,7 @@ async function deleteCourse() {
     if (indexOfSelectCourse != 0) {
         let ownerEmail = window.userEmail;
         let courseName = coursesDropdown.options[indexOfSelectCourse].text;
-        const url = '/webserver/deleteCourse?courseName=' + courseName + '&ownerEmail=' + ownerEmail;
+        const url = `/webserver/deleteCourse?courseName=${courseName}&ownerEmail=${ownerEmail}`;
         let response = await fetch(url);
         if (response.ok) {
             //TODO
@@ -119,7 +146,7 @@ async function populateCoursesDropdown() {
         let dropDownList = document.querySelector('#coursesDropdown');
         dropDownList.innerHTML = '<option value = "0">Courses</option>>'; //Stops pressing the sign in button multiple times duplicating dropdown TODO bug if an empty courses is selected and then user loggs out there is "Courses" as an option
         for (course in jsonResponse) {
-            dropDownList.innerHTML = dropDownList.innerHTML + '<option value=' + course + '>' + jsonResponse[course].courseName + '</option';
+            dropDownList.innerHTML = dropDownList.innerHTML + `<option value="${course}">${jsonResponse[course].courseName}</option`;
         }
     } else {
         console.error("ERROR code : populateCoursesDropdown01 : Invalid response from server");
@@ -134,8 +161,6 @@ async function populateCoursesDropdown() {
  TODO Not use global to remember selected week
 */
 async function switchToWeek() {
-    // switchToWeek
-    // saveChanges(); //Saving changes to currently selected week
     let courseName = getCourseName();
     let weekNumber = getCurrentWeek();
     clearColumns(false, true, true, true); //Clear all columns but the weeks column.Stops previous weeks contents lingerring
@@ -147,9 +172,8 @@ async function switchToWeek() {
     if (weeksColumn.childNodes[weekNumber])
         weeksColumn.childNodes[weekNumber].classList.toggle("selected");
 
-    const url = '/webserver/getWeek?courseName=' + courseName + '&weekNumber=' + weekNumber;
+    const url = `/webserver/getWeek?courseName=${courseName}&weekNumber=${weekNumber}`;
     const response = await fetch(url);
-    console.log("loading"+weekNumber +"of"+courseName);
     if (response.ok) {
         let jsonResponse = await response.json();
         if (jsonResponse) {
@@ -159,7 +183,7 @@ async function switchToWeek() {
             if (jsonResponse.resources) addTextAreaToResources(null, jsonResponse.resources);
         }
     } else {
-        console.error("ERROR switching to week:" + weekNumber + " course: " + courseName);
+        console.error(`ERROR switching to week:${weekNumber}course:${courseName}`);
     }
 }
 
@@ -171,13 +195,13 @@ async function addCourse() {
     let courseName = document.getElementById('newCourseTextField').value;
     if (courseName) {
         let email = window.userEmail;
-        const url = '/webserver/addCourse?courseName=' + courseName + '&ownerEmail=' + email;
+        const url = `/webserver/addCourse?courseName=${courseName}&ownerEmail=${email}`;
         let response = await fetch(url);
         if (response.ok) {
             populateCoursesDropdown();
         }
         await addNewWeek();
-        setUrlParams(1,courseName);
+        setUrlParams(1, courseName);
         await switchToWeek();
         setCoursesDropdown(courseName);
     }
@@ -188,7 +212,7 @@ TODO Explaination
 Needs to load the number of weeks and the contents for the first week.
 */
 async function getNumberOfWeeks(courseName) {
-    const url = '/webserver/getNumberOfWeeks?courseName=' + courseName;
+    const url = `/webserver/getNumberOfWeeks?courseName=${courseName}`;
     let response = await fetch(url);
     if (response.ok) {
         let jsonResponse = await response.json();
@@ -229,14 +253,12 @@ async function saveChanges() {
         let notesTextAreas = document.querySelectorAll('#notesColumnTextArea');
         let resourcesTextAreas = document.querySelectorAll('#resourcesColumnTextArea');
         let arrayOfTopicsText = nodeListToJSON(topicsTextAreas);
-        console.log("saving topics contents as :"+arrayOfTopicsText);
+        console.log("saving topics contents as :" + arrayOfTopicsText);
         let arrayOfNotesText = nodeListToJSON(notesTextAreas);
         let arrayOfResourcesText = nodeListToJSON(resourcesTextAreas);
         let courseName = getCourseName();
 
-        console.log("Saving changes to:"+courseName+"week:"+weekNumber);
-        const url = '/webserver/updateWeek?weekNumber=' + weekNumber + "&courseName=" + courseName + "&topics=" + arrayOfTopicsText + "&notesAndIdeas=" + arrayOfNotesText + "&resources=" + arrayOfResourcesText;
-
+        const url = `/webserver/updateWeek?weekNumber=${weekNumber}&courseName=${courseName}&topics=${ arrayOfTopicsText}&notesAndIdeas=${arrayOfNotesText}&resources=${arrayOfResourcesText}`;
         let response = await fetch(url);
         if (response.ok) {}
     }
@@ -250,8 +272,8 @@ async function courseSelected() {
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
     let selectedCourse = coursesDropdown.options[indexOfSelectCourse].text;
     await saveChanges();
-    setUrlParams(1,selectedCourse);
-    console.log("changingToCourse"+selectedCourse);
+    setUrlParams(1, selectedCourse);
+    console.log("changingToCourse" + selectedCourse);
     // saveChanges();
     clearColumns(true, true, true, true);
     if (indexOfSelectCourse != 0) {; //Stops function if "Courses" is selected
@@ -271,7 +293,7 @@ async function courseSelected() {
 function bindToSwitchToWeek(weekNumber, courseName) { //https://stackoverflow.com/questions/17981437/how-to-add-event-listeners-to-an-array-of-objects
     return function() {
         saveChanges();
-        clearColumns(false,true,true,true);
+        clearColumns(false, true, true, true);
         setUrlParams(weekNumber, courseName);
         switchToWeek(null, courseName, weekNumber);
 
