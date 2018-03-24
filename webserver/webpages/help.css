@@ -1,0 +1,15 @@
+#mainText {
+    border: 0.15em solid black;
+    margin: 1em;
+    padding: 1em;
+    background-color: #eaf0f9;
+}
+
+#title {
+    padding: 0.1em;
+    font-weight: bold;
+}
+
+#headerText {
+    text-align: center;
+}
