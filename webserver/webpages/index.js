@@ -128,7 +128,7 @@ async function transferOwnershipOfCourse() {
         let courseName = coursesDropdown.options[indexOfSelectCourse].text;
         let newOwnerEmail = document.getElementById('newOwnerTextField').value;
         const url = `/webserver/transferOwnership?courseName=${courseName}&newOwnerEmail=${newOwnerEmail}&token=${token}`;
-        let response = await fetch(url,fetchOptions);
+        let response = await fetch(url, fetchOptions);
         if (response.ok) {}
     }
 }
@@ -154,12 +154,18 @@ async function deleteCourse() {
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
     if (indexOfSelectCourse != 0) {
-        let ownerEmail = window.userEmail;
-        let courseName = coursesDropdown.options[indexOfSelectCourse].text;
-        const url = `/webserver/deleteCourse?courseName=${courseName}&ownerEmail=${ownerEmail}`;
-        let response = await fetch(url);
-        if (response.ok) {
-            //TODO
+        const token = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token; //Getting the token of the currently logged in user which is then passed to the server.
+        if (token) {
+            const fetchOptions = {
+                credentials: 'same-origin',
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+            };
+            let courseName = coursesDropdown.options[indexOfSelectCourse].text;
+            const url = `/webserver/deleteCourse?courseName=${courseName}&token=${token}`;
+            let response = await fetch(url, fetchOptions);
         }
     }
 }
@@ -229,8 +235,6 @@ async function switchToWeek() {
     if (response.ok) {
         let jsonResponse = await response.json();
         if (jsonResponse) {
-            console.log("this one u cunt");
-            console.log(jsonResponse);
             if (jsonResponse.topics) addTextAreaToTopics(null, jsonResponse.topics);
             if (jsonResponse.notesAndIdeas) addTextAreaToNotes(null, jsonResponse.notesAndIdeas);
             if (jsonResponse.resources) addTextAreaToResources(null, jsonResponse.resources);
@@ -462,7 +466,6 @@ function onSignIn(googleUser) {
     // console.log('Name: ' + profile.getName());
     // console.log('Image URL: ' + profile.getImageUrl());
     // console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-    window.userEmail = googleUser.getBasicProfile().getEmail();
     document.getElementById('logoutButton').style.visibility = "visible";
     document.getElementById('saveButton').style.visibility = "visible";
     populateCoursesDropdown();
@@ -472,7 +475,6 @@ function onSignIn(googleUser) {
  This function (signOut) is only ran when the uses presses on the "logout" button.The function should sign out the user and set a global variable to allow other functions to check if the user is signed in.
 */
 function signOut() {
-    window.userEmail = undefined;
     var auth2 = gapi.auth2.getAuthInstance();
     auth2.signOut().then(function() {
         clearColumns(true, true, true, true);
@@ -481,24 +483,6 @@ function signOut() {
         document.getElementById('saveButton').style.visibility = "hidden";
         console.log('User signed out.');
     });
-}
-
-async function callServer() {
-    const id_token = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token;
-
-    const fetchOptions = {
-        credentials: 'same-origin',
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + id_token
-        },
-    };
-    const response = await fetch('/api/hello', fetchOptions);
-    if (!response.ok) {
-        // handle the error
-        return;
-    }
-    // handle the response
 }
 
 (function() {

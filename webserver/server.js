@@ -65,7 +65,7 @@ app.get('/webserver/deleteCourse', async function(req, res) {
     console.log("delete cours called");
     res.statusCode = 200;
     let courseName = req.query.courseName;
-    let ownerEmail = req.query.ownerEmail;
+    let ownerEmail = req.user.emails[0].value;
     try {
         let query = await databaseMethod.deleteCourse(courseName, ownerEmail);
     } catch (e) {
