@@ -16,14 +16,15 @@
     <input type="text" id="newCourseTextField" placeholder="Course Name">
     <button id="newCourseButton" type="button"> + </button>
     <!-- TODO format this footer in a MUCH better way-->
-    <button id="keyboardShortcutsButton" type="button" style="background-color:red"> View Keyboard Shortcuts </button>
     <button id="deleteWeekButton" type="button" style="background-color:orange"> Delete week</button>
     <!-- still got to make it remove the week-->
     <button id="deleteCourseButton" type="button" style="background-color:orange"> Delete course</button>
     <!-- still got to make it remove the course-->
     <button id="transferOwnershipButton" type="button"> Transfer Ownership</button>
+    <form action="/help.html">
+    <button id="helpButton" href="/help.html">Help</button>
+</form>
     <div id="settingsIcon" alt="Settings Icon">&#9881;</div>
-    <div id="keyboardIcon" alt="Settings Icon">&#9000;</div>
     <input type="text" id="newOwnerTextField" placeholder="New Owner Name">
     <button id="addCollaboratorButton" type="button" style="background-color:red"> Add Collaborator</button>
     <button id="removeCollaboratorButton" type="button" style="background-color:red"> Remove Collaborator</button>
@@ -33,10 +34,10 @@
 </header>
 <!-- TODO format this footer in a MUCH better way-->
 <main>
-    <p>Weeks<button id="newWeekButton" type="button">+</button></p>
-    <p>Topics<button id="newTopicButton" type="button">+</button></p>
-    <p>Notes & Ideas<button id="newNotesAndIdeasButton" type="button">+</button></p>
-    <p>Resources<button id="newResourceButton" type="button">+</button></p>
+    <p id="columnTitle">Weeks<button id="newWeekButton" type="button">+</button></p>
+    <p id="columnTitle">Topics<button id="newTopicButton" type="button">+</button></p>
+    <p id="columnTitle">Notes & Ideas<button id="newNotesAndIdeasButton" type="button">+</button></p>
+    <p id="columnTitle">Resources<button id="newResourceButton" type="button">+</button></p>
     <div class="weeksColumn">Weeks</div>
     <div class="topicsColumn">
         <header>Topics</header>

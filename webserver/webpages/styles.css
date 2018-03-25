@@ -7,9 +7,11 @@ Reduce amount of CSS by combining classes
 
 main {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    /* grid-template-columns: repeat(4, 1fr); */
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-column-gap: 1em;
-    grid-template-rows: 0.125fr 1fr 0.0625fr;
+    /* grid-template-rows: 0.125fr 1fr 0.0625fr; */
+    grid-template-rows: 0.0fr 1fr 0.0625fr;
     grid-template-areas: "head head head head" "weeksColumn topicsColumn notesColumn resourcesColumn" "footer footer footer footer";
     height: 95vh;
     width: 95vw;
@@ -40,7 +42,7 @@ body{
 
 * {
     --header-text-alignment: center;
-    --column-text-alignment: left;
+    --column-text-alignment: center;
     text-align: var(--header-text-alignment);
     --column-border: 2px solid black;
 }

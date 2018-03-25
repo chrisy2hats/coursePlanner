@@ -18,6 +18,33 @@ document.getElementById('coursesDropdown').addEventListener('click', saveChanges
 document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
 document.getElementById('themeChanger').addEventListener("click", toggleTheme);
 
+document.getElementById("newCourseTextField").onkeypress = (e) => {
+    if (e.keyCode == '13') addCourse();
+}
+
+document.getElementById("newOwnerTextField").onkeypress = (e) => {
+    if (e.keyCode == '13') transferOwnershipOfCourse();
+}
+
+//Making columns dropable
+document.querySelector(".resourcesColumn").addEventListener("dragover", (e) => {
+    e.preventDefault();
+});
+
+document.querySelector(".resourcesColumn").addEventListener("drop", (e) => {
+    console.log("drop!");
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    let txt = e.dataTransfer.getData("text/plain");
+    console.log(txt);
+});
+
+
+function drop(ev) {
+    ev.preventDefault();
+    var data = ev.dataTransfer.getData("text");
+    ev.target.appendChild(document.getElementById(data));
+}
 
 function reportError(errorMessage, displayDuration) {
     if (!displayDuration) displayDuration = 1000;
@@ -55,14 +82,22 @@ function setCoursesDropdown(courseName) {
 
 function toggleTheme() {
     //TODO make changes to theme presist over reloads by setting it as a url parameter
+    let columnTitles = document.querySelectorAll("#columnTitle");
+    console.log(columnTitles);
     let button = document.getElementById('themeChanger');
     let backgroundColor = document.body.style.backgroundColor;
     if (backgroundColor == "black") {
         document.body.style.backgroundColor = "#F8F9F9";
         button.textContent = "Join the dark side!";
+        columnTitles.forEach(x => {
+            x.style.color = "black";
+        });
     } else {
         document.body.style.backgroundColor = "black";
         button.textContent = "Join the rebel alliance!";
+        columnTitles.forEach(x => {
+            x.style.color = "white";
+        });
     }
 }
 
@@ -70,24 +105,30 @@ function toggleTheme() {
 function setUrlParams(weekNumber, courseName) {
     if (!weekNumber) weekNumber = getCurrentWeek();
     if (!courseName) courseName = getCourseName();
-    let theme = getTheme();
-    history.pushState(null, null, `/?theme=${theme}&currentWeek=${weekNumber}&courseName=${courseName}`); //Sets the URL of the page without a reload.
+    history.pushState(null, null, `/?currentWeek=${weekNumber}&courseName=${courseName}`); //Sets the URL of the page without a reload.
 }
 
 /*
 Function kinda redundant as collaborators have the same access rights as owners atm
 */
 async function transferOwnershipOfCourse() {
+    saveChanges();
     let dropDownList = document.querySelector('#coursesDropdown');
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
     if (indexOfSelectCourse != 0) {
+        const token = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token; //Getting the token of the currently logged in user which is then passed to the server.
+        const fetchOptions = {
+            credentials: 'same-origin',
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+        };
         let courseName = coursesDropdown.options[indexOfSelectCourse].text;
-        let ownerEmail = window.userEmail;
         let newOwnerEmail = document.getElementById('newOwnerTextField').value;
-        // const url = '/webserver/transferOwnership?courseName=' + courseName + '&ownerEmail=' + ownerEmail + '&newOwnerEmail=' + newOwnerEmail;
-        const url = `/webserver/transferOwnership?courseName=${courseName}&ownerEmail=${ownerEmail}&newOwnerEmail=${newOwnerEmail}`;
-        let response = await fetch(url);
+        const url = `/webserver/transferOwnership?courseName=${courseName}&newOwnerEmail=${newOwnerEmail}&token=${token}`;
+        let response = await fetch(url,fetchOptions);
         if (response.ok) {}
     }
 }
@@ -99,7 +140,7 @@ async function deleteWeek() {
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
     if (indexOfSelectCourse != 0) {
-        let weekNumber = window.selectedWeek
+        let weekNumber = getCurrentWeek();
         let courseName = coursesDropdown.options[indexOfSelectCourse].text;
         const url = `/webserver/deleteWeek?weekNumber=${weekNumber}&courseName=${courseName}`;
         let response = await fetch(url);
@@ -138,18 +179,29 @@ function viewKeyboardShortcuts() {
  and put these courses into a dropdown list. The courses should only be loaded if a user is signed in.
 */
 async function populateCoursesDropdown() {
-    let email = window.userEmail;
-    const url = '/webserver/getCourses?email=' + email;
-    const response = await fetch(url);
-    if (response.ok) {
-        let jsonResponse = await response.json();
-        let dropDownList = document.querySelector('#coursesDropdown');
-        dropDownList.innerHTML = '<option value = "0">Courses</option>>'; //Stops pressing the sign in button multiple times duplicating dropdown TODO bug if an empty courses is selected and then user loggs out there is "Courses" as an option
-        for (course in jsonResponse) {
-            dropDownList.innerHTML = dropDownList.innerHTML + `<option value="${course}">${jsonResponse[course].courseName}</option`;
+    const token = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token; //Getting the token of the currently logged in user which is then passed to the server.
+    if (token) {
+        const fetchOptions = {
+            credentials: 'same-origin',
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+        };
+        let url = `/webserver/getCourses?token=${token}`
+        const response = await fetch(url, fetchOptions);
+        if (response.ok) {
+            let jsonResponse = await response.json();
+            let dropDownList = document.querySelector('#coursesDropdown');
+            dropDownList.innerHTML = '<option value = "0">Courses</option>>'; //Stops pressing the sign in button multiple times duplicating dropdown TODO bug if an empty courses is selected and then user loggs out there is "Courses" as an option
+            for (course in jsonResponse) {
+                dropDownList.innerHTML = dropDownList.innerHTML + `<option value="${course}">${jsonResponse[course].courseName}</option`;
+            }
+        } else {
+            console.error("ERROR code : populateCoursesDropdown01 : Invalid response from server");
         }
     } else {
-        console.error("ERROR code : populateCoursesDropdown01 : Invalid response from server");
+        console.error("ERROR code : No or invalid token. User probably not signed in.");
     }
 }
 
@@ -177,7 +229,8 @@ async function switchToWeek() {
     if (response.ok) {
         let jsonResponse = await response.json();
         if (jsonResponse) {
-
+            console.log("this one u cunt");
+            console.log(jsonResponse);
             if (jsonResponse.topics) addTextAreaToTopics(null, jsonResponse.topics);
             if (jsonResponse.notesAndIdeas) addTextAreaToNotes(null, jsonResponse.notesAndIdeas);
             if (jsonResponse.resources) addTextAreaToResources(null, jsonResponse.resources);
@@ -194,9 +247,16 @@ TODO explanation
 async function addCourse() {
     let courseName = document.getElementById('newCourseTextField').value;
     if (courseName) {
-        let email = window.userEmail;
-        const url = `/webserver/addCourse?courseName=${courseName}&ownerEmail=${email}`;
-        let response = await fetch(url);
+        const token = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token; //Getting the token of the currently logged in user which is sdpassed to the server.
+        const fetchOptions = {
+            credentials: 'same-origin',
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+        };
+        const url = `/webserver/addCourse?courseName=${courseName}&token=${token}`
+        let response = await fetch(url, fetchOptions);
         if (response.ok) {
             populateCoursesDropdown();
         }
@@ -272,15 +332,15 @@ async function courseSelected() {
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
     let selectedCourse = coursesDropdown.options[indexOfSelectCourse].text;
     await saveChanges();
-    setUrlParams(1, selectedCourse);
     console.log("changingToCourse" + selectedCourse);
     // saveChanges();
     clearColumns(true, true, true, true);
     if (indexOfSelectCourse != 0) {; //Stops function if "Courses" is selected
+        setUrlParams(1, selectedCourse);
         //TODO set save button to allowed using cursor: allowed;
         let numberOfWeeks = await getNumberOfWeeks(selectedCourse);
         for (let i = 0; i < numberOfWeeks; i++) addNewWeek(true); //true indicates it is loading weeks not creating weeks.
-        if (numberOfWeeks > 0) switchToWeek(null, selectedCourse, 1); //If statement protects from trying to load week 1 for empty course.
+        if (numberOfWeeks > 0) switchToWeek(); //If statement protects from trying to load week 1 for empty course.
     } else {
         //TODO set save button to not allowed using cursor: not-allowed;
     }
@@ -314,10 +374,12 @@ async function addNewWeek(load) {
     let selectedCourse = coursesDropdown.options[indexOfSelectCourse].text;
     //Adding the newly created week to the database
     if (load != true) { //Cannot use "!load" as undefined would make the code run
-        if (window.userEmail) { //Checking they are signed in
+        const token = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token; //Getting the token of the currently logged in user which is then passed to the server.
+        if (token) { //Checking they are signed in
             //Adding new week to the database so the save button can run an update query on it
             if (indexOfSelectCourse != 0) {
-                const url = '/webserver/addWeek/?weekNumber=' + numberOfWeeks + '&courseName=' + selectedCourse;
+                // const url = '/webserver/addWeek/?weekNumber=' + numberOfWeeks + '&courseName=' + selectedCourse;
+                const url = `/webserver/addWeek/?weekNumber=${numberOfWeeks}&courseName=${selectedCourse}`;
                 let response = await fetch(url);
                 if (response.ok) {
                     //TODO something  here
@@ -352,10 +414,10 @@ function addTextAreaToNotes(event, contents) {
     try {
         contents = JSON.parse(contents) //Will fail if contents is undefined
         contents.map(element => {
-            notesColumn.innerHTML += '<textarea id="notesColumnTextArea"  placeholder="Enter Text">' + element + '</textarea>'
+            notesColumn.innerHTML += '<textarea id="notesColumnTextArea"  placeholder="Enter Text" draggable=true>' + element + '</textarea>'
         });
     } catch (e) {
-        notesColumn.innerHTML += '<textarea id="notesColumnTextArea"  placeholder="Enter Text"></textarea>'
+        notesColumn.innerHTML += '<textarea id="notesColumnTextArea"  placeholder="Enter Text" draggable=true></textarea>'
     }
 }
 

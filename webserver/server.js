@@ -31,7 +31,7 @@ app.use('/', express.static('webpages', {
  @return {JSON Object} Containing an array of the course names.
 */
 app.get('/webserver/getCourses/', async function(req, res) { //TODO getCourses is probably not the best name
-    let email = req.query.email;
+    let email = req.user.emails[0].value;
     if (!email) {
         res.statusCode = 500;
         console.error("ERROR code: server.js03 : undefined passed to getCourses");
@@ -51,11 +51,11 @@ app.get('/webserver/getCourses/', async function(req, res) { //TODO getCourses i
 });
 
 app.get('/webserver/transferOwnership', async function(req, res) {
-    console.log("transferOwnership called")
     res.statusCode = 200;
     let courseName = req.query.courseName;
-    let ownerEmail = req.query.ownerEmail;
+    let ownerEmail = req.user.emails[0].value;
     let newOwnerEmail = req.query.newOwnerEmail;
+    console.log(`Transfering course: ${courseName} from ${ownerEmail} to ${newOwnerEmail}`);
     await databaseMethod.transferOwnershipOfCourse(courseName, ownerEmail, newOwnerEmail);
 
 });
@@ -91,7 +91,7 @@ app.get('/webserver/deleteWeek', async function(req, res) {
 app.get('/webserver/addCourse', async function(req, res) {
     res.statusCode = 200;
     let courseName = req.query.courseName;
-    let ownerEmail = req.query.ownerEmail;
+    let ownerEmail = req.user.emails[0].value;
     try {
         let queryResponse = await databaseMethod.addCourse(courseName, ownerEmail);
     } catch (e) {
@@ -101,7 +101,7 @@ app.get('/webserver/addCourse', async function(req, res) {
     res.send();
 });
 
-app.get('/webserver/addWeek', async function(req, res) {
+app.post('/webserver/addWeek', async function(req, res) {
     console.log("addWeek called");
     res.statusCode = 200;
     let weekNumber = req.query.weekNumber;
