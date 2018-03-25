@@ -4,15 +4,23 @@ Website for planning university courses.
 
 Coursework for UOP WebScript unit
 
+
+How to run:
+Navigate to the webserver directory and run
+```
+node server.js
+```
+Or run
+```
+npm run dashboard
+```
+If you want to run the server with only errors output:
+```
+node server.js 1> /dev/null #Redirect stdout to /dev/null
+```
+This assumes a Unix-like environment.
+
+
 Key features:
 
 Saving - Changes are saved whenever the save button is pressed or a new when you change weeks //TODO save when u change course
-
-
-Source of setting icon: https://www.iconfinder.com/iconsets/set-app-incredibles
-
-Under Creative Commons (Attribution 3.0 Unported): https://creativecommons.org/licenses/by/3.0/
-
-Source of keyboard icon: https://www.iconfinder.com/iconsets/computer-and-technologies-1
-
-Under Creative Commons (Attribution 3.0 Unported): https://creativecommons.org/licenses/by/3.0/

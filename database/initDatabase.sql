@@ -14,6 +14,7 @@ create table if not exists coursePlannerDatabase.courses(
 
 create table if not exists coursePlannerDatabase.weeks(
     weekNumber int not null ,
+    ownerEmail varchar(50) not null references courses (ownerEmail),
     courseName varchar(50) not null references courses(courseName),
     topics varchar(255),
     notesAndIdeas varchar(255),
