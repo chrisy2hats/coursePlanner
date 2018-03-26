@@ -30,10 +30,7 @@
     <form action="/help.html">
         <button id="helpButton" href="/help.html">Help</button>
     </form>
-    <div id="settingsIcon" alt="Settings Icon">&#9881;</div>
     <input type="text" id="newOwnerTextField" placeholder="New Owner Name">
-    <button id="addCollaboratorButton" type="button" style="background-color:red"> Add Collaborator</button>
-    <button id="removeCollaboratorButton" type="button" style="background-color:red"> Remove Collaborator</button>
 
     <div id="errorReporter"></div>
 
@@ -44,13 +41,14 @@
     <p id="columnTitle">Notes & Ideas<button id="newNotesAndIdeasButton" type="button" aria-label="Button to add a note ">+</button></p>
     <p id="columnTitle">Resources<button id="newResourceButton" type="button" aria-label="Button to add a resources">+</button></p>
     <div class="weeksColumn" aria-hidden aria-live="assertive">Weeks</div>
-    <div class="topicsColumn" aria-hidden aria-live="assertive">
+    <div class="topicsColumn" draggable="true" aria-hidden aria-live="assertive">
         <header>Topics</header>
     </div>
     <div class="notesColumn" aria-hidden aria-live="assertive">
         <header>Notes and Ideas</header>
     </div>
-    <div class="resourcesColumn" aria-hidden aria-live="assertive">
+    <div class="resourcesColumn" ondrop="dropHandler(event);" aria-hidden aria-live="assertive">
+
         </header>Resources </header>
     </div>
     <div class="footer" aria-live="polite">

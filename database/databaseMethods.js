@@ -20,10 +20,12 @@ module.exports.addCourse = addCourse;
 /*
 TODO explaination
 */
-async function addWeek(weekNumber, courseName) {
+async function addWeek(weekNumber, courseName,ownerEmail) {
+    console.log("addWeek called");
     const sql = await init();
     const insertquery = sql.format('insert into weeks set ? ;', {
         weekNumber,
+        ownerEmail,
         courseName
     });
     await sql.query(insertquery);
@@ -35,6 +37,7 @@ module.exports.addWeek = addWeek;
 
 */
 async function updateWeek(weekNumber, courseName, topics, notesAndIdeas, resources) {
+    console.log("topcs"+topics);
     const sql = await init();
     const query = sql.format(`update weeks set topics=?, notesAndIdeas =?, resources =? where weekNumber = ? and courseName = ? `, [topics, notesAndIdeas, resources, weekNumber, courseName]);
     try {
@@ -60,7 +63,7 @@ async function getWeek(courseName, weekNumber) {
     const query = sql.format(`select topics,notesAndIdeas,resources from weeks where courseName = ? and weekNumber = ?`, [courseName, weekNumber]);
     const resultOfQuery = await sql.query(query);
     if (resultOfQuery[0].length == 0) {
-        console.error("ERROR code : databaseMethods.js04 : no data for week: " + weekNumber + " on course: " + courseName);
+        console.error("ERROR code : databaseMethods.js04 : Can't get week : no data for week: " + weekNumber + " on course: " + courseName);
         return "{}";
     }
     return resultOfQuery[0];

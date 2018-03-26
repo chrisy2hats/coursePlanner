@@ -10,17 +10,54 @@ document.getElementById('newCourseButton').addEventListener('click', addCourse);
 document.getElementById('deleteWeekButton').addEventListener('click', deleteWeek);
 document.getElementById('deleteCourseButton').addEventListener('click', deleteCourse);
 document.getElementById('transferOwnershipButton').addEventListener('click', transferOwnershipOfCourse);
-// document.getElementById('addCollaboratorButton').addEventListener('click', addCollaborator);
-// document.getElementById('removeCollaboratorButton').addEventListener('click', removeCollaborator);
-// document.getElementById('keyboardShortcutsButton').addEventListener('click', viewKeyboardShortcuts);
 document.getElementById('coursesDropdown').addEventListener('change', courseSelected);
 document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
 document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
 document.getElementById('themeChanger').addEventListener("click", toggleTheme);
 document.getElementById('fontSizeDropdown').addEventListener("change", setGlobalFontSize);
 
+
+// document.querySelector(".resourcesColumn").addEventListener("drop", (e) => {
+//     let txt = e.dataTransfer.getData("text/plain");
+//     console.log(e.dataTransfer);
+//
+//      console.log("txt");
+//     console.log(this.innerHTML);
+//   });
+function dropHandler(dropevent) {
+    dropevent.preventDefault();
+    var data = dropevent.dataTransfer.getData("text");
+    // dropevent.target.appendChild(document.getElementById(data));
+    dropevent.target.innerHTML += data;
+    document.getElementById("drag").style.color = 'black';
+}
+
+// function dropHandler(ev) {
+//     ev.preventDefault();
+//     // Get the id of the target and add the moved element to the target's DOM
+//      let txt = ev.dataTransfer.getData("text/plain");
+//      console.log("txt");
+//     console.log(txt);
+//     var data = ev.dataTransfer.getData("text");
+//     console.log("trasn");
+//     console.log(ev.dataTransfer);
+//     console.log("data");
+//     console.log(data);
+//     console.log(ev.target);
+//     console.log(ev.target.innerHTML);
+//     console.log(ev);
+//     console.log("target");
+//     console.log(ev.target);
+//     console.log("content");
+//     console.log(ev.target.textContent);
+//     // ev.target.textContent += " fuck fave";
+//     // ev.target.innerHTML += "fuck dave";
+//
+//     ev.target.innerHTML += document.getElementById(data);
+// }
+//Making pressing enter in a text field call it's associated function
 document.getElementById("newCourseTextField").onkeypress = (e) => {
-    if (e.keyCode == '13') addCourse();
+    if (e.keyCode == '13') addCourse(); //keyCode 13 == enter
 }
 
 document.getElementById("newOwnerTextField").onkeypress = (e) => {
@@ -32,13 +69,13 @@ document.querySelector(".resourcesColumn").addEventListener("dragover", (e) => {
     e.preventDefault();
 });
 
-document.querySelector(".resourcesColumn").addEventListener("drop", (e) => {
-    console.log("drop!");
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    let txt = e.dataTransfer.getData("text/plain");
-    console.log(txt);
-});
+// document.querySelector(".resourcesColumn").addEventListener("drop", (e) => {
+//     console.log("drop!");
+//     e.preventDefault();
+//     e.dataTransfer.dropEffect = "move";
+//     let txt = e.dataTransfer.getData("text/plain");
+//     console.log(txt);
+// });
 
 
 function setGlobalFontSize() {
@@ -193,15 +230,6 @@ async function deleteCourse() {
     }
 }
 
-function addCollaborator() {
-    console.log("addCollaborator called");
-}
-
-
-function viewKeyboardShortcuts() {
-    console.log("View keyboard shortcuts called");
-}
-
 //Functions that call the web server
 /*
  This function (populateCoursesDropdown) should retrieve all courses associated with the signed in users
@@ -253,8 +281,17 @@ async function switchToWeek() {
     if (weeksColumn.childNodes[weekNumber])
         weeksColumn.childNodes[weekNumber].classList.toggle("selected");
 
-    const url = `/webserver/getWeek?courseName=${courseName}&weekNumber=${weekNumber}`;
-    const response = await fetch(url);
+
+    const token = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token; //Getting the token of the currently logged in user which is sdpassed to the server.
+    const fetchOptions = {
+        credentials: 'same-origin',
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+    };
+    const url = `/webserver/getWeek?courseName=${courseName}&weekNumber=${weekNumber}&token=${token}`;
+    const response = await fetch(url, fetchOptions);
     if (response.ok) {
         let jsonResponse = await response.json();
         if (jsonResponse) {
@@ -272,6 +309,7 @@ Get contents of text box and use their email as the owner
 TODO explanation
 */
 async function addCourse() {
+    saveChanges();
     let courseName = document.getElementById('newCourseTextField').value;
     if (courseName) {
         const token = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token; //Getting the token of the currently logged in user which is sdpassed to the server.
@@ -282,15 +320,21 @@ async function addCourse() {
                 'Authorization': 'Bearer ' + token
             },
         };
-        const url = `/webserver/addCourse?courseName=${courseName}&token=${token}`
-        let response = await fetch(url, fetchOptions);
-        if (response.ok) {
-            populateCoursesDropdown();
+        if (token) {
+            const url = `/webserver/addCourse?courseName=${courseName}&token=${token}`
+            let response = await fetch(url, fetchOptions);
+            if (response.ok) {
+                populateCoursesDropdown();
+            }
+            setUrlParams(1, courseName);
+            clearColumns();
+            await addNewWeek(false).then(async () => {
+                await switchToWeek();
+            });
+            setCoursesDropdown(courseName);
+        } else {
+            console.log("Cant add course. User not signed in.");
         }
-        await addNewWeek();
-        setUrlParams(1, courseName);
-        await switchToWeek();
-        setCoursesDropdown(courseName);
     }
 }
 
@@ -330,9 +374,9 @@ function nodeListToJSON(nodeList) {
 TODO Explaination
 */
 async function saveChanges() {
+    console.log("Saving changes...");
     //TODO update database then inform user save was successful
     let weekNumber = getCurrentWeek();
-    let dropDownList = document.querySelector('#coursesDropdown');
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
     if (indexOfSelectCourse != 0) {
@@ -348,6 +392,8 @@ async function saveChanges() {
         const url = `/webserver/updateWeek?weekNumber=${weekNumber}&courseName=${courseName}&topics=${ arrayOfTopicsText}&notesAndIdeas=${arrayOfNotesText}&resources=${arrayOfResourcesText}`;
         let response = await fetch(url);
         if (response.ok) {}
+    } else {
+        console.log("Not saving changes as \"Courses\" is selected");
     }
 }
 
@@ -385,6 +431,7 @@ function bindToSwitchToWeek(weekNumber, courseName) { //https://stackoverflow.co
 
     };
 }
+
 /*
  This function (addNewWeek) should create a new box within the box labelled "Weeks". Each box should be "Week" followed by the week number.
  @params load boolean to indicate if the new week is being loaded or created for the first time. If it is being created it should be added to the database.
@@ -393,44 +440,70 @@ async function addNewWeek(load) {
     let numberOfWeeks = document.querySelectorAll('#weeksColumnGrid').length + 1; //TODO make this accurate. If I have 10 weeks and I delete week 4 the next week will be week 10 not 11. Could use a regex search for numbers on the last child element on the column.
     let weeksColumn = document.querySelector('.weeksColumn');
     let weeksColumnContents = weeksColumn.innerHTML;
-    weeksColumn.innerHTML = weeksColumnContents + '<div id="weeksColumnGrid"  >Week ' + numberOfWeeks + '</div>';
-    let dropDownList = document.querySelector('#coursesDropdown');
+    weeksColumn.innerHTML = weeksColumnContents + `<div id="weeksColumnGrid"tabindex=${numberOfWeeks} >Week ${numberOfWeeks}</div>`;
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
-    let selectedCourse = coursesDropdown.options[indexOfSelectCourse].text;
+    let selectedCourse = getCourseName();
     //Adding the newly created week to the database
     if (load != true) { //Cannot use "!load" as undefined would make the code run
         const token = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token; //Getting the token of the currently logged in user which is then passed to the server.
         if (token) { //Checking they are signed in
             //Adding new week to the database so the save button can run an update query on it
-            if (indexOfSelectCourse != 0) {
-                // const url = '/webserver/addWeek/?weekNumber=' + numberOfWeeks + '&courseName=' + selectedCourse;
-                const url = `/webserver/addWeek/?weekNumber=${numberOfWeeks}&courseName=${selectedCourse}`;
-                let response = await fetch(url);
-                if (response.ok) {
-                    //TODO something  here
-                }
+            if (selectedCourse != "Courses") {
+
+                const fetchOptions = {
+                    credentials: 'same-origin',
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                };
+                console.log("Adding new week to database");
+                const url = `/webserver/addWeek/?weekNumber=${numberOfWeeks}&courseName=${selectedCourse}&token=${token}`;
+                let response = await fetch(url, fetchOptions);
+            } else {
+                console.log("Not adding week as \"Courses\" is selected");
             }
         }
     }
-    for (let i = 0; i < weeksColumn.childNodes.length; i++) //TODO try to use a map here
+    for (let i = 0; i < weeksColumn.childNodes.length; i++) {
         weeksColumn.childNodes[i].addEventListener('click', bindToSwitchToWeek(i, selectedCourse));
+
+        weeksColumn.childNodes[i].onkeypress = (e) => {
+            if (e.keyCode == '13') {
+                saveChanges();
+                clearColumns(false, true, true, true);
+                setUrlParams(i, selectedCourse);
+                switchToWeek(null, selectedCourse, i);
+            }
+        }
+        document.getElementById("newCourseTextField").onkeypress = (e) => {
+            if (e.keyCode == '13') addCourse(); //keyCode 13 == enter
+        }
+    }
 }
 
 /*
  This function (addTextAreaToTopics) should create a new text area within the box labelled "Topics".
 */
 function addTextAreaToTopics(event, contents) {
+    saveChanges();
+    console.log("contents");
+    console.log(contents);
     let topicsColumn = document.querySelector('.topicsColumn');
+    let textArea = document.createElement('div');
     try {
         contents = JSON.parse(contents) //Will fail if contents is undefined
         contents.map(element => {
-            topicsColumn.innerHTML += '<textarea id="topicsColumnTextArea"  placeholder="Enter Text">' + element + '</textarea>'
+            topicsColumn.innerHTML += '<textarea id="topicsColumnTextArea"  draggable=true placeholder="Enter Text">' + element + '</textarea>'
         });
     } catch (e) {
-        topicsColumn.innerHTML += '<textarea id="topicsColumnTextArea"  placeholder="Enter Text"></textarea>'
+        let elementToAdd = document.createElement('div');
+        elementToAdd.innerHTML += '<textarea id="topicsColumnTextArea" draggable=true placeholder="Enter Text"></textarea>'
+        topicsColumn.appendChild(elementToAdd);
     }
 }
+
 
 /*
  This function (addTextAreaToNotes) should create a new text area within the box labelled "Notes and ideas".
@@ -443,7 +516,9 @@ function addTextAreaToNotes(event, contents) {
             notesColumn.innerHTML += '<textarea id="notesColumnTextArea"  placeholder="Enter Text" draggable=true>' + element + '</textarea>'
         });
     } catch (e) {
-        notesColumn.innerHTML += '<textarea id="notesColumnTextArea"  placeholder="Enter Text" draggable=true></textarea>'
+        let elementToAdd = document.createElement('div');
+        elementToAdd.innerHTML += '<textarea id="notesColumnTextArea"  placeholder="Enter Text" draggable=true></textarea>'
+        notesColumn.appendChild(elementToAdd);
     }
 }
 
@@ -459,7 +534,9 @@ function addTextAreaToResources(event, contents) {
             resourcesColumn.innerHTML += '<textarea id="resourcesColumnTextArea"  placeholder="Enter Text">' + element + '</textarea>'
         });
     } catch (e) {
-        resourcesColumn.innerHTML += '<textarea id="resourcesColumnTextArea"  placeholder="Enter Text"></textarea>'
+        let elementToAdd = document.createElement('div');
+        elementToAdd.innerHTML += '<textarea id="resourcesColumnTextArea"  placeholder="Enter Text"></textarea>'
+        resourcesColumn.appendChild(elementToAdd);
     }
 }
 

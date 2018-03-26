@@ -62,7 +62,6 @@ app.get('/webserver/transferOwnership', async function(req, res) {
 
 
 app.get('/webserver/deleteCourse', async function(req, res) {
-    console.log("delete cours called");
     res.statusCode = 200;
     let courseName = req.query.courseName;
     let ownerEmail = req.user.emails[0].value;
@@ -101,13 +100,17 @@ app.get('/webserver/addCourse', async function(req, res) {
     res.send();
 });
 
+//Post as it returns nothing
 app.post('/webserver/addWeek', async function(req, res) {
-    console.log("addWeek called");
+    console.log("Saving week");
     res.statusCode = 200;
     let weekNumber = req.query.weekNumber;
     let courseName = req.query.courseName;
+    let ownerEmail = req.user.emails[0].value;
     try {
-        let queryResponse = await databaseMethod.addWeek(weekNumber, courseName)
+
+        let queryResponse = await databaseMethod.addWeek(weekNumber, courseName,ownerEmail)
+        console.log("cunt");
     } catch (e) {
         console.error("ERROR code : server.js06 : Error whilst adding week:" + e);
         res.statusCode = 500;
@@ -117,24 +120,21 @@ app.post('/webserver/addWeek', async function(req, res) {
 
 
 app.get('/webserver/updateWeek', async function(req, res) {
+    console.log("Update week called");
     res.setHeader('Content-Type', 'text/text');
-    console.log("updateWeek");
-
     res.statusCode = 200;
     let weekNumber = req.query.weekNumber;
-    console.log(weekNumber);
     let courseName = req.query.courseName;
     let topics = req.query.topics;
-    console.log(topics);
     let notesAndIdeas = req.query.notesAndIdeas;
     let resources = req.query.resources;
     try {
         let weekContents = await databaseMethod.updateWeek(weekNumber, courseName, topics, notesAndIdeas, resources);
     } catch (e) {
-        console.error("ERROR code : server.js05 : error updating week: " + weekNumber + " in course: " + courseName);
+        console.error(`ERROR code : server.js05 : error updating week: ${weekNumber} in course: ${courseName}`);
         res.statusCode = 500;
     }
-    res.textContent = "YOOOOOOOOOOOo"; //TODO bug this isn't being sent
+    res.textContent = "Week updated.";
     res.send();
 });
 
@@ -144,6 +144,7 @@ app.get('/webserver/getWeek', async function(req, res) {
     res.statusCode = 200;
     let weekNumber = req.query.weekNumber;
     let courseName = req.query.courseName;
+    let ownerEmail = req.user.emails[0].value;
     let weekContents = [];
     try {
         weekContents = await databaseMethod.getWeek(courseName, weekNumber);
@@ -164,7 +165,7 @@ app.get('/webserver/getNumberOfWeeks/', async function(req, res) { //TODO getCou
         courseInfo = await databaseMethod.getNumberOfWeeksInACourse(courseName);
 
     } catch (e) {
-        console.error("ERROR code : server.js08 : error whilst getting number of weeks: " + e);
+        console.error(`ERROR code : server.js08 : error whilst getting number of weeks in ${courseName}: ${e}`);
         res.statusCode = 500;
     }
     res.json(courseInfo[0]);
