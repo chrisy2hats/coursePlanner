@@ -1,11 +1,11 @@
 # To Do
-Webpages:
-index.js:
-- [ ] Some await fetchs should be await posts
-
-UI:
-- [ ] Add keyboard shortcuts for power users. Recommended by Rich
+Some await fetchs should be await posts
+Add keyboard shortcuts for power users. Recommended by Rich
 Admin accounts . Recommended by Rich
+Keyboard navigation
+Aria tags
+Drag and drop
+
 
 BUGS...
 If the user creates a course then doesn't reload nothig is  saved

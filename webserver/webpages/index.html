@@ -9,53 +9,54 @@
     <header>
         Course planner
     </header>
-    <button id="themeChanger">Join the dark side!</button>
-    <select id="coursesDropdown">
+    <button id="themeChanger" aria-label="Toggle dark theme">Join the dark side!</button>
+    <select id="coursesDropdown" aria-label="Dropdown list of your courses">
             <option value = "0" >Courses</option>
           </select>
+    <select id="fontSizeDropdown" aria-label="Dropdown list of font sizes">
+            <option>Extra extra small</option>
+      <option>Extra small</option>
+      <option>Small</option>
+      <option>Medium</option>
+      <option>Large</option>
+      <option>Extra large</option>
+      <option>Extra extra large</option>
+  </select>
     <input type="text" id="newCourseTextField" placeholder="Course Name">
     <button id="newCourseButton" type="button"> + </button>
-    <!-- TODO format this footer in a MUCH better way-->
     <button id="deleteWeekButton" type="button" style="background-color:orange"> Delete week</button>
-    <!-- still got to make it remove the week-->
     <button id="deleteCourseButton" type="button" style="background-color:orange"> Delete course</button>
-    <!-- still got to make it remove the course-->
     <button id="transferOwnershipButton" type="button"> Transfer Ownership</button>
     <form action="/help.html">
-    <button id="helpButton" href="/help.html">Help</button>
-</form>
+        <button id="helpButton" href="/help.html">Help</button>
+    </form>
     <div id="settingsIcon" alt="Settings Icon">&#9881;</div>
     <input type="text" id="newOwnerTextField" placeholder="New Owner Name">
     <button id="addCollaboratorButton" type="button" style="background-color:red"> Add Collaborator</button>
     <button id="removeCollaboratorButton" type="button" style="background-color:red"> Remove Collaborator</button>
 
- <div id="errorReporter"></div>
+    <div id="errorReporter"></div>
 
 </header>
-<!-- TODO format this footer in a MUCH better way-->
 <main>
-    <p id="columnTitle">Weeks<button id="newWeekButton" type="button">+</button></p>
-    <p id="columnTitle">Topics<button id="newTopicButton" type="button">+</button></p>
-    <p id="columnTitle">Notes & Ideas<button id="newNotesAndIdeasButton" type="button">+</button></p>
-    <p id="columnTitle">Resources<button id="newResourceButton" type="button">+</button></p>
-    <div class="weeksColumn">Weeks</div>
-    <div class="topicsColumn">
+    <p id="columnTitle">Weeks<button id="newWeekButton" type="button" aria-label="Button to add a week">+</button></p>
+    <p id="columnTitle">Topics<button id="newTopicButton" type="button" aria-label="Button to add a topic">+</button></p>
+    <p id="columnTitle">Notes & Ideas<button id="newNotesAndIdeasButton" type="button" aria-label="Button to add a note ">+</button></p>
+    <p id="columnTitle">Resources<button id="newResourceButton" type="button" aria-label="Button to add a resources">+</button></p>
+    <div class="weeksColumn" aria-hidden aria-live="assertive">Weeks</div>
+    <div class="topicsColumn" aria-hidden aria-live="assertive">
         <header>Topics</header>
     </div>
-    <div class="notesColumn">
+    <div class="notesColumn" aria-hidden aria-live="assertive">
         <header>Notes and Ideas</header>
     </div>
-    <div class="resourcesColumn">
-        </header>Resources text</header>
+    <div class="resourcesColumn" aria-hidden aria-live="assertive">
+        </header>Resources </header>
     </div>
-    <div class="footer">
-        <button id="logoutButton" type="button"> Logout </button>
-        <!-- TODO format this footer in a MUCH better way-->
-        Footer text
-
-        <div class="g-signin2" data-onsuccess="onSignIn"></div>
-        <button id="saveButton" type="button"> Save </button>
-        <!-- TODO format this footer in a MUCH better way-->
+    <div class="footer" aria-live="polite">
+        <button id="logoutButton" type="button" aria-label="Button to logout."> Logout </button> Footer text
+        <div class="g-signin2" data-onsuccess="onSignIn" aria-label="Google signin button"></div>
+        <button id="saveButton" type="button" aria-label="Button to save changes"> Save changes </button>
     </div>
 </main>
 

@@ -17,6 +17,7 @@ document.getElementById('coursesDropdown').addEventListener('change', courseSele
 document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
 document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
 document.getElementById('themeChanger').addEventListener("click", toggleTheme);
+document.getElementById('fontSizeDropdown').addEventListener("change", setGlobalFontSize);
 
 document.getElementById("newCourseTextField").onkeypress = (e) => {
     if (e.keyCode == '13') addCourse();
@@ -39,6 +40,28 @@ document.querySelector(".resourcesColumn").addEventListener("drop", (e) => {
     console.log(txt);
 });
 
+
+function setGlobalFontSize() {
+    let fontSizeDropdown = document.getElementById("fontSizeDropdown");
+    let size = fontSizeDropdown.options[fontSizeDropdown.selectedIndex].text;
+    switch (size) { //"Small","Medium" and "Large" do not need to change as fontSize is not case sensitive
+        case "Extra extra small":
+            size = "xx-small";
+            break;
+        case "Extra small":
+            size = "x-small";
+            break;
+        case "Extra large":
+            size = "x-large";
+            break;
+        case "Extra extra large":
+            size = "xx-large";
+            break;
+    }
+    document.querySelectorAll('*').forEach(element => {
+        element.style.fontSize = size;
+    });
+}
 
 function drop(ev) {
     ev.preventDefault();
@@ -337,7 +360,6 @@ async function courseSelected() {
     let selectedCourse = coursesDropdown.options[indexOfSelectCourse].text;
     await saveChanges();
     console.log("changingToCourse" + selectedCourse);
-    // saveChanges();
     clearColumns(true, true, true, true);
     if (indexOfSelectCourse != 0) {; //Stops function if "Courses" is selected
         setUrlParams(1, selectedCourse);
@@ -460,15 +482,14 @@ function clearColumns(weeks, topics, notes, resources) {
  @params googleUser The Google account being user. This is passed to the function by the Google API
 */
 function onSignIn(googleUser) {
-    //TODO wrap code in try catch incase cookie policy causes issues
-    var profile = googleUser.getBasicProfile();
-    // console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-    // console.log('Name: ' + profile.getName());
-    // console.log('Image URL: ' + profile.getImageUrl());
-    // console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-    document.getElementById('logoutButton').style.visibility = "visible";
-    document.getElementById('saveButton').style.visibility = "visible";
-    populateCoursesDropdown();
+    try {
+        let profile = googleUser.getBasicProfile();
+        document.getElementById('logoutButton').style.visibility = "visible";
+        document.getElementById('saveButton').style.visibility = "visible";
+        populateCoursesDropdown();
+    } catch (e) {
+        console.error("ERROR signing in user." + e + ". Browser cookie policy may need changing."); //TODO tell user to change cookies policy
+    }
 }
 
 /*
