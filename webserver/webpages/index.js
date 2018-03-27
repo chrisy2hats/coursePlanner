@@ -12,11 +12,14 @@ document.getElementById('deleteCourseButton').addEventListener('click', deleteCo
 document.getElementById('transferOwnershipButton').addEventListener('click', transferOwnershipOfCourse);
 document.getElementById('coursesDropdown').addEventListener('change', courseSelected);
 document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
-document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
 document.getElementById('themeChanger').addEventListener("click", toggleTheme);
 document.getElementById('fontSizeDropdown').addEventListener("change", setGlobalFontSize);
 
 
+// window.resourcesColumn.addEventListener("drop",(e) =>{
+//     console.log("asdhnjagui");
+//
+// });
 // document.querySelector(".resourcesColumn").addEventListener("drop", (e) => {
 //     let txt = e.dataTransfer.getData("text/plain");
 //     console.log(e.dataTransfer);
@@ -25,11 +28,30 @@ document.getElementById('fontSizeDropdown').addEventListener("change", setGlobal
 //     console.log(this.innerHTML);
 //   });
 function dropHandler(dropevent) {
+    // let ev = dropevent;
     dropevent.preventDefault();
+
+    console.log(dropevent.target.textContent);
+    console.log("id");
+    console.log(dropevent.target.id);
     var data = dropevent.dataTransfer.getData("text");
     // dropevent.target.appendChild(document.getElementById(data));
-    dropevent.target.innerHTML += data;
-    document.getElementById("drag").style.color = 'black';
+    // dropevent.target.innerHTML += data;
+    console.log("data");
+    console.log(data);
+
+    dropevent.dataTransfer.dropEffect = "move";
+    console.log(dropevent);
+    // console.log(dropevent.toElement);
+    console.log(dropevent.toElement.previousSibling);
+    // dropevent.toElement.previousElementSibling.removeChild(dropevent.toElement.previousElementSibling);
+
+    // console.log(dropevent.origin);
+    console.log(dropevent.dataTransfer.types);
+    let x = "asd";
+    let elementToAdd = document.createElement('div');
+    elementToAdd.innerHTML += `<textarea id="topicsColumnTextArea" draggable=true placeholder="Enter Text"> ${x}</textarea>`
+    dropevent.target.appendChild(elementToAdd, dropevent.target);
 }
 
 // function dropHandler(ev) {
@@ -491,7 +513,6 @@ function addTextAreaToTopics(event, contents) {
     console.log("contents");
     console.log(contents);
     let topicsColumn = document.querySelector('.topicsColumn');
-    let textArea = document.createElement('div');
     try {
         contents = JSON.parse(contents) //Will fail if contents is undefined
         contents.map(element => {

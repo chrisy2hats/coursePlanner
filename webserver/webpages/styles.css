@@ -36,9 +36,6 @@ body{
     visibility: hidden;
 }
 
-/* header {
-    text: black;
-} */
 
 * {
     --header-text-alignment: center;
