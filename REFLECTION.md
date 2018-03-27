@@ -18,3 +18,9 @@ Something about the history functionality
 Aria tags - Online documentation seems to be poor - Either very brief or exteremely indepth (w3c standard)
 
 Googling issues ALWAYS gives Jquery results
+
+Attemping automated testing not getting far.
+
+Github versioning is a saviour
+
+String interpolation
