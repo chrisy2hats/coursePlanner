@@ -126,6 +126,7 @@ app.get('/webserver/updateWeek', async function(req, res) {
     let weekNumber = req.query.weekNumber;
     let courseName = req.query.courseName;
     let topics = req.query.topics;
+    console.log("Topics in server ="+topics);
     let notesAndIdeas = req.query.notesAndIdeas;
     let resources = req.query.resources;
     try {
@@ -140,6 +141,7 @@ app.get('/webserver/updateWeek', async function(req, res) {
 
 
 app.get('/webserver/getWeek', async function(req, res) {
+    console.log("getWeek");
     res.setHeader('Content-Type', 'application/json');
     res.statusCode = 200;
     let weekNumber = req.query.weekNumber;
@@ -152,6 +154,16 @@ app.get('/webserver/getWeek', async function(req, res) {
         console.error("ERROR code : server.js07 : error in get week: " + e);
         res.statusCode = 500;
     }
+    if (weekContents.length > 1){
+        console.log("#########################################################");
+        console.error(`ERROR code : server.js09 : more than one row returned for week ${weekNumber} in course ${courseName}`)
+
+    console.log(weekContents.length);
+        console.log("weekContents[0]");
+        console.log(weekContents[0]);
+        console.log("#########################################################");
+    }
+
     res.json(weekContents[0]);
 });
 

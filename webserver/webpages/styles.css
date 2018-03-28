@@ -1,4 +1,5 @@
 /*
+
 TODO
 Actually use grid-area not just let elements fall into place1
 Reduce amount of CSS by combining classes
@@ -7,11 +8,9 @@ Reduce amount of CSS by combining classes
 
 main {
     display: grid;
-    /* grid-template-columns: repeat(4, 1fr); */
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     grid-column-gap: 1em;
-    /* grid-template-rows: 0.125fr 1fr 0.0625fr; */
-    grid-template-rows:0.1fr 1fr ;
+    grid-template-rows: 0.125fr 1fr ;
     grid-template-areas:"foo foo foo foo" "head head head head" "weeksColumn topicsColumn notesColumn resourcesColumn" ;
     height: 95vh;
     width: 95vw;
@@ -20,6 +19,10 @@ body{
     background-color:#F8F9F9;
 }
 
+.menu{
+    background-color:red;
+    display:inline-block;
+}
 #errorReporter{
     visibility: hidden;
 }
@@ -30,7 +33,6 @@ body{
 
 #topicsColumnTextArea, #notesColumnTextArea, #resourcesColumnTextArea {
     /*TODO should probably make the not resizeable*/
-    margin-top: 0.125em;
     margin-bottom: 0.125em;
     width: 95%;
     border: 1em;
@@ -47,54 +49,60 @@ body{
     text-align: var(--header-text-alignment);
     --column-border: 2px solid black;
 }
-#settingsIcon{
-    width:2em;
-    height:2em;
+
+
+#g-signin2{
+    grid-area:googleButton;
 }
-
-/* .footer {
-    grid-area: footer;
-    margin-top: 5px;
-    background: pink;
-    border: var(--column-border);
-} */
-
-.weeksColumn {
+.coursesDropdown{
+    display:inline-block;
+}
+.weeksColumn,.topicsColumn,.notesColumn,.resourcesColumn{
     text-align: var(--column-text-alignment);
-    grid-area: weeksColumn;
     border: var(--column-border);
-    /* background: #96858F; */
-    /* background: #666666; */
-    /* background: #778899; */
-    /* background: #9A7993; */
     background: #D7CEC7;
+    margin-bottom: 1em;
+
 }
 
 #weeksColumnGrid {
     margin-top: 0.125em;
     margin-bottom: 0.25em;
     border: var(--column-border);
-    /* background: lightgray; */
     display: grid;
     grid-template-columns: 1fr;
 }
 
-.topicsColumn, .notesColumn {
-    border: var(--column-border);
-    /* background: #6D7993; */
+.topicsColumn{
     background: #565656;
 }
 
 .notesColumn {
-    border: var(--column-border);
     background: #76323F;
 }
 
 .resourcesColumn {
-    border: var(--column-border);
-    /* background: #D5D5D5; */
     background: #C09F80;
 }
 .selected{
     background-color:lightblue;
+}
+
+#navBar .closeNavBarButton {
+    position: absolute;
+    right: 10em;
+    font-size:1em;
+    margin-left: 5em;
+}
+#navBar{
+    height: 100vh;
+    z-index: 1;
+    transition: 0.6s;
+    width: 0em;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: slategrey;
+    overflow-x: hidden;
+    padding-top: 5em;
 }

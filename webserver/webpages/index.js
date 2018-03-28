@@ -15,69 +15,14 @@ document.getElementById('coursesDropdown').addEventListener('change', courseSele
 document.getElementById('coursesDropdown').addEventListener('click', saveChanges);
 document.getElementById('themeChanger').addEventListener("click", toggleTheme);
 document.getElementById('fontSizeDropdown').addEventListener("change", setGlobalFontSize);
+document.getElementById("optionsButton").addEventListener("click", toggleNavBar);
 
-
-// window.resourcesColumn.addEventListener("drop",(e) =>{
-//     console.log("asdhnjagui");
-//
-// });
-// document.querySelector(".resourcesColumn").addEventListener("drop", (e) => {
-//     let txt = e.dataTransfer.getData("text/plain");
-//     console.log(e.dataTransfer);
-//
-//      console.log("txt");
-//     console.log(this.innerHTML);
-//   });
-function dropHandler(dropevent) {
-    // let ev = dropevent;
-    dropevent.preventDefault();
-
-    console.log(dropevent.target.textContent);
-    console.log("id");
-    console.log(dropevent.target.id);
-    var data = dropevent.dataTransfer.getData("text");
-    // dropevent.target.appendChild(document.getElementById(data));
-    // dropevent.target.innerHTML += data;
-    console.log("data");
-    console.log(data);
-
-    dropevent.dataTransfer.dropEffect = "move";
-    console.log(dropevent);
-    // console.log(dropevent.toElement);
-    console.log(dropevent.toElement.previousSibling);
-    // dropevent.toElement.previousElementSibling.removeChild(dropevent.toElement.previousElementSibling);
-
-    // console.log(dropevent.origin);
-    console.log(dropevent.dataTransfer.types);
-    let x = "asd";
-    let elementToAdd = document.createElement('div');
-    elementToAdd.innerHTML += `<textarea id="topicsColumnTextArea" draggable=true placeholder="Enter Text"> ${x}</textarea>`
-    dropevent.target.appendChild(elementToAdd, dropevent.target);
+function toggleNavBar() {
+    let navBar = document.getElementById("navBar");
+    let currentWidth = navBar.style.width;
+    currentWidth == "0em" ? navBar.style.width = "15em" : navBar.style.width = "0em";
 }
 
-// function dropHandler(ev) {
-//     ev.preventDefault();
-//     // Get the id of the target and add the moved element to the target's DOM
-//      let txt = ev.dataTransfer.getData("text/plain");
-//      console.log("txt");
-//     console.log(txt);
-//     var data = ev.dataTransfer.getData("text");
-//     console.log("trasn");
-//     console.log(ev.dataTransfer);
-//     console.log("data");
-//     console.log(data);
-//     console.log(ev.target);
-//     console.log(ev.target.innerHTML);
-//     console.log(ev);
-//     console.log("target");
-//     console.log(ev.target);
-//     console.log("content");
-//     console.log(ev.target.textContent);
-//     // ev.target.textContent += " fuck fave";
-//     // ev.target.innerHTML += "fuck dave";
-//
-//     ev.target.innerHTML += document.getElementById(data);
-// }
 //Making pressing enter in a text field call it's associated function
 document.getElementById("newCourseTextField").onkeypress = (e) => {
     if (e.keyCode == '13') addCourse(); //keyCode 13 == enter
@@ -91,14 +36,6 @@ document.getElementById("newOwnerTextField").onkeypress = (e) => {
 document.querySelector(".resourcesColumn").addEventListener("dragover", (e) => {
     e.preventDefault();
 });
-
-// document.querySelector(".resourcesColumn").addEventListener("drop", (e) => {
-//     console.log("drop!");
-//     e.preventDefault();
-//     e.dataTransfer.dropEffect = "move";
-//     let txt = e.dataTransfer.getData("text/plain");
-//     console.log(txt);
-// });
 
 
 function setGlobalFontSize() {
@@ -136,6 +73,7 @@ function reportError(errorMessage, displayDuration) {
     errorReportSpace.style.visibility = "visible";
     setTimeout(function() {
         errorReportSpace.style.visibility = "hidden";
+        errorReportSpace.textContent = "Placeholder text"// Stops invisbile text taking up lots of space it a long error message is reported
     }, displayDuration);
 }
 
@@ -160,7 +98,6 @@ function setUrlParams(weekNumber, courseName) {
 }
 
 function setCoursesDropdown(courseName) {
-    console.log("setting to" + courseName);
     let coursesDropdown = document.getElementById('coursesDropdown');
     for (let i = 0; i < coursesDropdown.length; i++) {
         if (coursesDropdown.options[i].text == courseName) {
@@ -336,9 +273,22 @@ Get contents of text box and use their email as the owner
 TODO explanation
 */
 async function addCourse() {
-    saveChanges();
+
     let courseName = document.getElementById('newCourseTextField').value;
+
     if (courseName) {
+
+    //Checking if the course already exists
+    let courseExists = false;
+    let coursesDropdown = document.getElementById("coursesDropdown");
+    for (let course in coursesDropdown.childNodes){
+        if (coursesDropdown.childNodes[course].label == courseName){
+            courseExists = true;
+            break;
+        }
+
+    }
+    if (!courseExists){
         const token = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token; //Getting the token of the currently logged in user which is sdpassed to the server.
         const fetchOptions = {
             credentials: 'same-origin',
@@ -348,6 +298,7 @@ async function addCourse() {
             },
         };
         if (token) {
+    saveChanges();
             const url = `/webserver/addCourse?courseName=${courseName}&token=${token}`
             let response = await fetch(url, fetchOptions);
             if (response.ok) {
@@ -362,7 +313,11 @@ async function addCourse() {
         } else {
             console.log("Cant add course. User not signed in.");
         }
+    }else {
+        console.error("ERROR not adding course as it already exists. Course = "+courseName);
+        reportError("You already have a course with that name");
     }
+}
 }
 
 /*
