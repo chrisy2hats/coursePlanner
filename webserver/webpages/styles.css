@@ -11,13 +11,17 @@ main {
     grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-column-gap: 1em;
     /* grid-template-rows: 0.125fr 1fr 0.0625fr; */
-    grid-template-rows: 0.0fr 1fr 0.0625fr;
-    grid-template-areas: "head head head head" "weeksColumn topicsColumn notesColumn resourcesColumn" "footer footer footer footer";
+    grid-template-rows:0.1fr 1fr ;
+    grid-template-areas:"foo foo foo foo" "head head head head" "weeksColumn topicsColumn notesColumn resourcesColumn" ;
     height: 95vh;
     width: 95vw;
 }
 body{
     background-color:#F8F9F9;
+}
+
+#errorReporter{
+    visibility: hidden;
 }
 
 #newWeekButton, #newTopicButton, #newNotesAndIdeasButton, #newResourceButton {
@@ -48,12 +52,12 @@ body{
     height:2em;
 }
 
-.footer {
+/* .footer {
     grid-area: footer;
     margin-top: 5px;
     background: pink;
     border: var(--column-border);
-}
+} */
 
 .weeksColumn {
     text-align: var(--column-text-alignment);

@@ -1,3 +1,4 @@
+'use strict'
 //Author up809059
 //Binding HTML buttons to their appropriate JavaScript functions
 document.getElementById('newWeekButton').addEventListener('click', addNewWeek);
@@ -132,8 +133,9 @@ function reportError(errorMessage, displayDuration) {
     if (!displayDuration) displayDuration = 1000;
     let errorReportSpace = document.getElementById("errorReporter");
     errorReportSpace.textContent = errorMessage;
+    errorReportSpace.style.visibility = "visible";
     setTimeout(function() {
-        errorReportSpace.textContent = "";
+        errorReportSpace.style.visibility = "hidden";
     }, displayDuration);
 }
 
@@ -149,6 +151,12 @@ function getCourseName() {
     let url = new URL(href);
     let week = url.searchParams.get("courseName");
     return week;
+}
+
+function setUrlParams(weekNumber, courseName) {
+    if (!weekNumber) weekNumber = getCurrentWeek();
+    if (!courseName) courseName = getCourseName();
+    history.pushState(null, null, `/?currentWeek=${weekNumber}&courseName=${courseName}`); //Sets the URL of the page without a reload.
 }
 
 function setCoursesDropdown(courseName) {
@@ -183,12 +191,6 @@ function toggleTheme() {
     }
 }
 
-
-function setUrlParams(weekNumber, courseName) {
-    if (!weekNumber) weekNumber = getCurrentWeek();
-    if (!courseName) courseName = getCourseName();
-    history.pushState(null, null, `/?currentWeek=${weekNumber}&courseName=${courseName}`); //Sets the URL of the page without a reload.
-}
 
 /*
 Function kinda redundant as collaborators have the same access rights as owners atm
@@ -268,12 +270,13 @@ async function populateCoursesDropdown() {
             },
         };
         let url = `/webserver/getCourses?token=${token}`
+
         const response = await fetch(url, fetchOptions);
         if (response.ok) {
             let jsonResponse = await response.json();
             let dropDownList = document.querySelector('#coursesDropdown');
             dropDownList.innerHTML = '<option value = "0">Courses</option>>'; //Stops pressing the sign in button multiple times duplicating dropdown TODO bug if an empty courses is selected and then user loggs out there is "Courses" as an option
-            for (course in jsonResponse) {
+            for (let course in jsonResponse) {
                 dropDownList.innerHTML = dropDownList.innerHTML + `<option value="${course}">${jsonResponse[course].courseName}</option`;
             }
         } else {
@@ -294,14 +297,16 @@ async function populateCoursesDropdown() {
 async function switchToWeek() {
     let courseName = getCourseName();
     let weekNumber = getCurrentWeek();
+    let weeksColumn = document.querySelector('.weeksColumn');
     clearColumns(false, true, true, true); //Clear all columns but the weeks column.Stops previous weeks contents lingerring
 
-    let weeksColumn = document.querySelector('.weeksColumn');
+
+    //Deselecting previously selected week
     let previousSelectedWeek = document.querySelector(".selected");
     if (previousSelectedWeek) previousSelectedWeek.classList.toggle("selected"); //A previous week may not be selected if an empty course is chosen
-
-    if (weeksColumn.childNodes[weekNumber])
+    if (weeksColumn.childNodes[weekNumber]) {
         weeksColumn.childNodes[weekNumber].classList.toggle("selected");
+    }
 
 
     const token = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token; //Getting the token of the currently logged in user which is sdpassed to the server.
@@ -413,7 +418,9 @@ async function saveChanges() {
 
         const url = `/webserver/updateWeek?weekNumber=${weekNumber}&courseName=${courseName}&topics=${ arrayOfTopicsText}&notesAndIdeas=${arrayOfNotesText}&resources=${arrayOfResourcesText}`;
         let response = await fetch(url);
-        if (response.ok) {}
+        if (response.ok) {
+            reportError("Changes saved");
+        }
     } else {
         console.log("Not saving changes as \"Courses\" is selected");
     }
@@ -423,18 +430,21 @@ async function saveChanges() {
 TODO Explaination
 */
 async function courseSelected() {
+    await saveChanges().then(() => {
+        clearColumns(true, true, true, true); //If clearColumns was executed before saveChanges then the week would be deleted.
+    });
     let coursesDropdown = document.getElementById('coursesDropdown');
     let indexOfSelectCourse = coursesDropdown.selectedIndex;
     let selectedCourse = coursesDropdown.options[indexOfSelectCourse].text;
-    await saveChanges();
     console.log("changingToCourse" + selectedCourse);
-    clearColumns(true, true, true, true);
     if (indexOfSelectCourse != 0) {; //Stops function if "Courses" is selected
         setUrlParams(1, selectedCourse);
         //TODO set save button to allowed using cursor: allowed;
         let numberOfWeeks = await getNumberOfWeeks(selectedCourse);
         for (let i = 0; i < numberOfWeeks; i++) addNewWeek(true); //true indicates it is loading weeks not creating weeks.
-        if (numberOfWeeks > 0) switchToWeek(); //If statement protects from trying to load week 1 for empty course.
+        if (numberOfWeeks == 0) addNewWeek(false);
+        switchToWeek(); //Switched to week 1 in the course
+        // if (numberOfWeeks > 0) switchToWeek(); //If statement protects from trying to load week 1 for empty course.
     } else {
         //TODO set save button to not allowed using cursor: not-allowed;
     }
@@ -449,8 +459,7 @@ function bindToSwitchToWeek(weekNumber, courseName) { //https://stackoverflow.co
         saveChanges();
         clearColumns(false, true, true, true);
         setUrlParams(weekNumber, courseName);
-        switchToWeek(null, courseName, weekNumber);
-
+        switchToWeek();
     };
 }
 
@@ -509,7 +518,7 @@ async function addNewWeek(load) {
  This function (addTextAreaToTopics) should create a new text area within the box labelled "Topics".
 */
 function addTextAreaToTopics(event, contents) {
-    saveChanges();
+    // saveChanges();
     console.log("contents");
     console.log(contents);
     let topicsColumn = document.querySelector('.topicsColumn');

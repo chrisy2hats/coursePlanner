@@ -53,6 +53,7 @@ CSS3 stuff - CSS grid and CSS variables used in /webserver/webpages/styles.css
 String interpolation used in several places.
 
 **Misc:**
+
 For my reflective log look at "REFLECTION.md".
 
 Some features which I haven't got around to implementing fully may have their functions in such as deleting weeks.

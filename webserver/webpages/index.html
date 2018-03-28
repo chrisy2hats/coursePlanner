@@ -9,10 +9,10 @@
     <header>
         Course planner
     </header>
-    <button id="themeChanger" aria-label="Toggle dark theme">Join the dark side!</button>
+    <button id="themeChanger" aria-label="Toggle dark theme">Join the dark side!</button> Your courses
     <select id="coursesDropdown" aria-label="Dropdown list of your courses">
             <option value = "0" >Courses</option>
-          </select>
+          </select> Font size
     <select id="fontSizeDropdown" aria-label="Dropdown list of font sizes">
             <option>Extra extra small</option>
       <option>Extra small</option>
@@ -21,26 +21,30 @@
       <option>Large</option>
       <option>Extra large</option>
       <option>Extra extra large</option>
-  </select>
+  </select> Add a new course
     <input type="text" id="newCourseTextField" placeholder="Course Name">
-    <button id="newCourseButton" type="button"> Add Course </button>
-    <button id="deleteWeekButton" type="button" style="background-color:orange"> Delete week</button>
-    <button id="deleteCourseButton" type="button" style="background-color:orange"> Delete course</button>
-    <button id="transferOwnershipButton" type="button"> Transfer Ownership</button>
+    <button id="newCourseButton" type="button"> Add Course </button> Delete current wek
+    <button id="deleteWeekButton" type="button" style="background-color:orange"> Delete week</button> Delete current course
+    <button id="deleteCourseButton" type="button" style="background-color:orange"> Delete course</button> Transfer ownership of course
+    <input type="text" id="newOwnerTextField" placeholder="New Owner Name">
+    <button id="transferOwnershipButton" type="button"> Transfer Ownership</button> View help page
     <form action="/help.html">
         <button id="helpButton" href="/help.html">Help Button</button>
     </form>
-    <input type="text" id="newOwnerTextField" placeholder="New Owner Name">
 
-    <div id="errorReporter"></div>
+    <div id="errorReporter" aria-hidden> Placeholder text</div>
 
+    <button id="logoutButton" type="button" aria-label="Button to logout."> Logout </button>
+    <div class="g-signin2" data-onsuccess="onSignIn" aria-label="Google signin button"></div>
+    <button id="saveButton" type="button" aria-label="Button to save changes"> Save changes </button>
 </header>
 <main>
     <p id="columnTitle">Weeks<button id="newWeekButton" type="button" aria-label="Button to add a week">+</button></p>
     <p id="columnTitle">Topics<button id="newTopicButton" type="button" aria-label="Button to add a topic">+</button></p>
     <p id="columnTitle">Notes & Ideas<button id="newNotesAndIdeasButton" type="button" aria-label="Button to add a note ">+</button></p>
     <p id="columnTitle">Resources<button id="newResourceButton" type="button" aria-label="Button to add a resources">+</button></p>
-    <div class="weeksColumn" aria-hidden aria-live="assertive">Weeks</div>
+    <div class="weeksColumn" aria-hidden aria-live="assertive">Weeks
+    </div>
     <div class="topicsColumn" draggable="true" aria-hidden aria-live="assertive">
         <header>Topics</header>
     </div>
@@ -48,13 +52,7 @@
         <header>Notes and Ideas</header>
     </div>
     <div class="resourcesColumn" ondrop="dropHandler(event);" aria-hidden aria-live="assertive">
-
         </header>Resources </header>
-    </div>
-    <div class="footer" aria-live="polite">
-        <button id="logoutButton" type="button" aria-label="Button to logout."> Logout </button> Footer text
-        <div class="g-signin2" data-onsuccess="onSignIn" aria-label="Google signin button"></div>
-        <button id="saveButton" type="button" aria-label="Button to save changes"> Save changes </button>
     </div>
 </main>
 
