@@ -1,11 +1,12 @@
 const mysql = require('mysql2/promise');
-
 const config = require('./config.json');
 
 
 //Insert functions
 /*
-TODO explaination
+ This function(addCourse) should insert a new course into the database. Every course has a name and an owner
+ @param string courseName - The name of the course
+ @param string ownerEmail - The email of the owner of the course
 */
 async function addCourse(courseName, ownerEmail) {
     const sql = await init();
@@ -18,7 +19,10 @@ async function addCourse(courseName, ownerEmail) {
 module.exports.addCourse = addCourse;
 
 /*
-TODO explaination
+ This function (addWeek) should add a new week to an already existsing course.
+ @param int weekNumber - The week within the course
+ @param string courseName - The name of the course
+ @param string ownerEmail - The email of the owner of the course which the week is being added to
 */
 async function addWeek(weekNumber, courseName,ownerEmail) {
     console.log("addWeek called");
@@ -34,10 +38,14 @@ module.exports.addWeek = addWeek;
 
 //Update functions
 /*
-
+ This function(updateWeek) should update the topics,notesAndIdeas and resources fields for an already existing week
+ @param int weekNumber - The week within the course
+ @param string courseName -  The name of the course
+ @param string topics - The contents of the topics field
+ @param string notesAndIdeas - The contents of the notesAndIdeas field
+ @param string resources - The contents of the resources field
 */
 async function updateWeek(weekNumber, courseName, topics, notesAndIdeas, resources) {
-    console.log("topcs"+topics);
     const sql = await init();
     const query = sql.format(`update weeks set topics=?, notesAndIdeas =?, resources =? where weekNumber = ? and courseName = ? `, [topics, notesAndIdeas, resources, weekNumber, courseName]);
     try {
@@ -48,15 +56,12 @@ async function updateWeek(weekNumber, courseName, topics, notesAndIdeas, resourc
 }
 module.exports.updateWeek = updateWeek;
 
-
-async function updateCourse(newCourseName, newOwnerEmail) {
-    //TODO
-}
-
-
 //Retrieve functions
 /*
-
+ This function (getWeek) should return the contents of a given week within a given course.
+ If there is no data for the week or it doesn't exist an empty JSON object should be returned
+ @param string courseName -  The name of the course
+ @param int weekNumber -  The week within the course
 */
 async function getWeek(courseName, weekNumber) {
     const sql = await init();
@@ -71,7 +76,9 @@ async function getWeek(courseName, weekNumber) {
 module.exports.getWeek = getWeek;
 
 /*
-TODO
+ This function(getNumberOfWeeksInACourse) should return the number of weeks within a given course
+ @param string courseName - The name of the course
+ @return int resultOfQuery - How many weeks are in the course
 */
 async function getNumberOfWeeksInACourse(courseName) {
     const sql = await init();
@@ -100,7 +107,11 @@ module.exports.retrieveCoursesByEmail = retrieveCoursesByEmail;
 
 //Delete Functions
 
-
+/*
+ This function (deleteWeek) should remove a given week from within a given course from the database
+ @param int - weekNumber - The number of the week to delete
+ @param string - courseName - The name of the course to delete the week from
+*/
 async function deleteWeek(weekNumber, courseName) {
     const sql = await init();
     const query = sql.format(`delete from weeks where courseName = ? and weekNumber = ?`, [courseName, weekNumber]);
@@ -112,6 +123,11 @@ async function deleteWeek(weekNumber, courseName) {
 }
 module.exports.deleteWeek = deleteWeek;
 
+/*
+ This function (deleteCourse) should delete a given course from the database
+ @param string - courseName - The name of the course to delete
+ @param string - ownerEmail - The owner of the course to delete
+*/
 async function deleteCourse(courseName, ownerEmail) {
     const sql = await init();
     const query = sql.format(`delete from courses where courseName = ? and ownerEmail= ?`, [courseName, ownerEmail]);
@@ -123,6 +139,12 @@ async function deleteCourse(courseName, ownerEmail) {
 }
 module.exports.deleteCourse = deleteCourse;
 
+/*
+ This function(transferOwnershipOfCourse) should change the owner email of a given course in the database.
+ @param - String - courseName - The name of the course to change the owner of
+ @param - String - ownerEmail - The current owner of the course
+ @param - String - newOwner - The owner that the course will be transfered to
+*/
 async function transferOwnershipOfCourse(courseName,ownerEmail,newOwner) {
     console.log("transferOwnershp to "+newOwner);
     const sql = await init();
@@ -134,13 +156,6 @@ async function transferOwnershipOfCourse(courseName,ownerEmail,newOwner) {
     }
 }
 module.exports.transferOwnershipOfCourse = transferOwnershipOfCourse;
-
-async function addCollaborator() {
-
-}
-async function removeCollaborator() {
-
-}
 
 //Boilerplate code for mysql connections
 /*
@@ -157,7 +172,8 @@ async function connectionTester() {
     }
 }
 
-//Functions taken from sql-contact-list in examples week 11    // console.log(await selectWeeksByCourse("WEBF1"));
+//Functions taken from sql-contact-list in examples week 11
+//  https://github.com/portsoc/ws_sql/blob/master/examples/sql-contact-list.js
 
 let sqlPromise = null;
 
