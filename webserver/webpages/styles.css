@@ -1,11 +1,3 @@
-/*
-
-TODO
-Actually use grid-area not just let elements fall into place1
-Reduce amount of CSS by combining classes
- https://htmlcolorcodes.com/
- */
-
 main {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -98,7 +90,7 @@ body{
     height: 100vh;
     z-index: 1;
     transition: 0.6s;
-    width: 0em;
+    width: 0px;
     position: fixed;
     top: 0;
     left: 0;
