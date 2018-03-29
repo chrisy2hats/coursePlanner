@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const databaseMethod = require('../database/databaseMethods.js');
 
+//Stuff for server side Google Auth
 let googleClientID = "424667604152-rh5b1c1fb52tqgqnf9lmau2vi826fa8i.apps.googleusercontent.com";
 app.use(GoogleAuth(googleClientID));
 app.use('/api', GoogleAuth.guardMiddleware());
@@ -24,10 +25,10 @@ app.use('/', express.static('webpages', {
     extensions: ['html']
 }));
 
-//Client to database middleware
 /*
- This function (/webserver/getCourses) should go retrieve the names of all courses associated with an email via the database methods.
+ This path (/webserver/getCourses) should go retrieve the names of all courses associated with an email via the database methods.
  It should check that one to many courses are returned and not run a query if the email address passed is undefined.
+ @params token - The google auth token to get the users email from
  @return {JSON Object} Containing an array of the course names.
 */
 app.get('/webserver/getCourses/', async function(req, res) { //TODO getCourses is probably not the best name
@@ -50,6 +51,12 @@ app.get('/webserver/getCourses/', async function(req, res) { //TODO getCourses i
     }
 });
 
+/*
+ This path (/webserver/transferOwnership) should call the database function to transfer ownership of a course
+ @param string  - courseName - The course to change ownership of
+ @param string - newOwnerEmail - The new owner of the course
+ @param token - Google auth token to get the user email from
+*/
 app.get('/webserver/transferOwnership', async function(req, res) {
     res.statusCode = 200;
     let courseName = req.query.courseName;
@@ -61,6 +68,11 @@ app.get('/webserver/transferOwnership', async function(req, res) {
 });
 
 
+/*
+ This path (/webserver/deleteCourse) should delete a course from the database
+ @param string - courseName - The course to remove from the database
+ @param token - Google auth token to get the user email from
+*/
 app.get('/webserver/deleteCourse', async function(req, res) {
     res.statusCode = 200;
     let courseName = req.query.courseName;
@@ -74,6 +86,12 @@ app.get('/webserver/deleteCourse', async function(req, res) {
     res.send()
 });
 
+/*
+ This path (/webserver/deleteWeek) should delete a week from a given coruse in the database
+ @param string - courseName - The course to remove the week from
+ @param int - weekNumber - The week to delete from database
+ @param token - Google auth token to get the user email from
+*/
 app.get('/webserver/deleteWeek', async function(req, res) {
     res.statusCode = 200;
     let weekNumber = req.query.weekNumber;
@@ -87,6 +105,12 @@ app.get('/webserver/deleteWeek', async function(req, res) {
     res.send()
 });
 
+/*
+ This path (/webserver/addCourse) should add a new course to the database.
+ The course should be stored using the users email
+ @param string - courseName - The course to add
+ @param token - Google auth token to get the user email from
+*/
 app.get('/webserver/addCourse', async function(req, res) {
     res.statusCode = 200;
     let courseName = req.query.courseName;
@@ -100,17 +124,20 @@ app.get('/webserver/addCourse', async function(req, res) {
     res.send();
 });
 
-//Post as it returns nothing
+/*
+ This path (/webserver/addWeek) should add a new blank week to a given course within the database.
+ It is a post as it returns nothing to the client
+ @param string - courseName - The course to add a week to
+ @param int - weekNumber - The number of the week that is being added
+ @param token - Google auth token to get the user email from
+*/
 app.post('/webserver/addWeek', async function(req, res) {
-    console.log("Saving week");
     res.statusCode = 200;
     let weekNumber = req.query.weekNumber;
     let courseName = req.query.courseName;
     let ownerEmail = req.user.emails[0].value;
     try {
-
         let queryResponse = await databaseMethod.addWeek(weekNumber, courseName,ownerEmail)
-        console.log("cunt");
     } catch (e) {
         console.error("ERROR code : server.js06 : Error whilst adding week:" + e);
         res.statusCode = 500;
@@ -120,7 +147,6 @@ app.post('/webserver/addWeek', async function(req, res) {
 
 
 app.get('/webserver/updateWeek', async function(req, res) {
-    console.log("Update week called");
     res.setHeader('Content-Type', 'text/text');
     res.statusCode = 200;
     let weekNumber = req.query.weekNumber;
@@ -140,8 +166,14 @@ app.get('/webserver/updateWeek', async function(req, res) {
 });
 
 
+/*
+ This path (/webserver/getWeek) should fetch the contents of a specific week within a course from the database
+ @param int weekNumber - The number of the week within the course that is being fetched
+ @param string courseName - The name of the course that the week is being fetched for
+ @param token - Google auth token to get the user email from
+ @return JSON object containing the topics,notes and ideas and resources for the week
+*/
 app.get('/webserver/getWeek', async function(req, res) {
-    console.log("getWeek");
     res.setHeader('Content-Type', 'application/json');
     res.statusCode = 200;
     let weekNumber = req.query.weekNumber;
@@ -157,18 +189,17 @@ app.get('/webserver/getWeek', async function(req, res) {
     if (weekContents.length > 1){
         console.log("#########################################################");
         console.error(`ERROR code : server.js09 : more than one row returned for week ${weekNumber} in course ${courseName}`)
-
-    console.log(weekContents.length);
-        console.log("weekContents[0]");
-        console.log(weekContents[0]);
-        console.log("#########################################################");
     }
 
     res.json(weekContents[0]);
 });
 
-
-app.get('/webserver/getNumberOfWeeks/', async function(req, res) { //TODO getCourses is probably not the best name
+/*
+ This path (/webserver/getNumberOfWeeks) should get the number of weeks in a given course
+ @params courseName - The name of the course to get the number of weeks of
+ @return int the number of weeks in the course passed  in the request
+*/
+app.get('/webserver/getNumberOfWeeks/', async function(req, res) {
     res.setHeader('Content-Type', 'application/json');
     res.statusCode = 200;
     let courseName = req.query.courseName;
