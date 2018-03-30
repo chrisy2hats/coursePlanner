@@ -44,31 +44,43 @@
 
 <div id="navBar">
     <div id="closeNavBarButton" onclick="toggleNavBar()">X</div>
+    <ul id="navBarList">
+        <li><button id="themeChanger" aria-label="Toggle dark theme">Join the dark side!</button> </li>
+        <li> Font size</li>
+        <li><select id="fontSizeDropdown" aria-label="Dropdown list of font sizes">
+          <option>Extra extra small</option>
+          <option>Extra small</option>
+          <option>Small</option>
+          <option>Medium</option>
+          <option>Large</option>
+          <option>Extra large</option>
+          <option>Extra extra large</option>
+        </select>
+        </li>
+        <li> Add a new course </li>
+        <li><input type="text" id="newCourseTextField" placeholder="Course Name"></li>
+        <li> <button id="newCourseButton" type="button"> Add Course </button> </li>
+        <li>Delete current week</li>
+        <li><button id="deleteWeekButton" type="button"> Delete week</button> </li>
+        <li>Delete current course </li>
+        <li><button id="deleteCourseButton" type="button"> Delete current course</button> </li>
+        <li>Transfer ownership of course</li>
+        <li><input type="text" id="newOwnerTextField" placeholder="New Owner Name"> </li>
+        <li><button id="transferOwnershipButton" type="button"> Transfer Ownership</button> </li>
+        <li>View help page </li>
+        <li>
+            <form action="/help.html">
+                <button id="helpButton" href="/help.html">Help Page</button>
+            </form>
+        </li>
+    </ul>
+</div>
 
-    <select id="fontSizeDropdown" aria-label="Dropdown list of font sizes">
-            <option>Extra extra small</option>
-      <option>Extra small</option>
-      <option>Small</option>
-      <option>Medium</option>
-      <option>Large</option>
-      <option>Extra large</option>
-      <option>Extra extra large</option>
-  </select>
-    <button id="themeChanger" aria-label="Toggle dark theme">Join the dark side!</button>
-    <div id "coursesText"> Your courses Font size Add a new course
-        <input type="text" id="newCourseTextField" placeholder="Course Name">
-        <button id="newCourseButton" type="button"> Add Course </button> Delete current week
-        <button id="deleteWeekButton" type="button" style="background-color:orange"> Delete week</button> Delete current course
-        <button id="deleteCourseButton" type="button" style="background-color:orange"> Delete course</button> Transfer ownership of course
-        <input type="text" id="newOwnerTextField" placeholder="New Owner Name">
-        <button id="transferOwnershipButton" type="button"> Transfer Ownership</button> View help page
-    </div>
+<!-- Use any element to open the sidenav -->
 
-    <!-- Use any element to open the sidenav -->
-
-    <!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
-    <div id="main">
-        ...
-    </div>
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
-    <script src="index.js"></script>
+<!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
+<div id="main">
+    ...
+</div>
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+<script src="index.js"></script>

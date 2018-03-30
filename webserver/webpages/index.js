@@ -32,7 +32,7 @@ document.getElementById("newOwnerTextField").onkeypress = (e) => {
 function toggleNavBar() {
     let navBar = document.getElementById("navBar");
     let currentWidth = navBar.style.width;
-    currentWidth == "0em" ? navBar.style.width = "15em" : navBar.style.width = "0em";
+    currentWidth == "15em" ? navBar.style.width = "0em" : navBar.style.width = "15em";
 }
 
 /*
